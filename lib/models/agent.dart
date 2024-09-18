@@ -27,8 +27,8 @@ class Agent {
       name: json['name'] ?? '',
       description: json['description'] ?? '',
       type: json['type'] ?? '',
-      isActive: json['is_active'] ?? false,
-      isDeployed: json['is_deployed'] ?? false,
+      isActive: json['is_active'] ,
+      isDeployed: json['is_deployed'],
       agentConfigs: json['agent_configs'] != null
           ? AgentConfigs.fromJson(json['agent_configs'])
           : AgentConfigs(

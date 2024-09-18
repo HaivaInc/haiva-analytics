@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_color_utils/flutter_color_utils.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class CupertinoFilterChip extends StatelessWidget {
@@ -13,7 +14,7 @@ class CupertinoFilterChip extends StatelessWidget {
     required this.label,
     required this.selected,
     required this.onSelected,
-    this.selectedColor = CupertinoColors.activeBlue,
+    this.selectedColor = const Color(0xFF19437D),
     this.textStyle,
   });
 

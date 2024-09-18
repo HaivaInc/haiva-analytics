@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:haivanalytics/theme/colortheme.dart';
 import 'package:provider/provider.dart';
 import '../models/agent.dart';
 import '../providers/agent_provider.dart';
@@ -46,11 +47,13 @@ class _TalkPageState extends State<TalkPage> {
         .where((language) => language.toLowerCase().contains(_searchQuery.toLowerCase()))
         .toList();
 
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Configure TALK'),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: ColorTheme.primary,
+        centerTitle: true,
+        title: Text('Configure TALK/SPEECH'),
       ),
-      child: SafeArea(
+      body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(16.0),
           child: Column(
@@ -90,7 +93,7 @@ class _TalkPageState extends State<TalkPage> {
                       return CupertinoFilterChip(
                         label: language,
                         selected: agentProvider.selectedLanguages.contains(language),
-                        selectedColor: Color(0xFF19437D),
+                        selectedColor: ColorTheme.primary,
                         onSelected: (bool selected) {
                           setState(() {
                             agentProvider.toggleLanguageSelection(language);
@@ -105,8 +108,9 @@ class _TalkPageState extends State<TalkPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Speech to Text', style: TextStyle(color: Color(0xFF19437D))),
+                  Text('Speech to Text', style: TextStyle(color: ColorTheme.primary)),
                   CupertinoSwitch(
+                    activeColor: ColorTheme.primary,
                     value: agentProvider.speechToTextEnabled,
                     onChanged: (bool value) {
                       agentProvider.toggleSpeechToText(value);
@@ -117,7 +121,8 @@ class _TalkPageState extends State<TalkPage> {
               Spacer(),
               Container(
                 width: double.infinity,
-                child: CupertinoButton.filled(
+                child: CupertinoButton(
+                  color: ColorTheme.primary,
                   child: Text('Next'),
                   onPressed: () async {
                     final agent = Agent(

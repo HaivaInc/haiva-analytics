@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
+import '../constants.dart';
 import '../models/agent.dart';
 import '../providers/agent_provider.dart';
 import '../services/agent_service.dart';
@@ -23,7 +24,7 @@ class _ConfigCreatePageState extends State<ConfigCreatePage> {
   String? _uploadedImageUrl;
   File? _avatarImage;
   Color _primaryColor = CupertinoColors.activeBlue;
-  Color _secondaryColor = CupertinoColors.systemBlue;
+  Color _secondaryColor = CupertinoColors.white;
   Color _tertiaryColor = CupertinoColors.black;
 
   @override
@@ -34,7 +35,7 @@ class _ConfigCreatePageState extends State<ConfigCreatePage> {
     _displayNameController = TextEditingController();
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(BuildContext context) async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
@@ -45,19 +46,21 @@ class _ConfigCreatePageState extends State<ConfigCreatePage> {
       });
 
       try {
-        final agentService = Provider.of<AgentService>(context, listen: false);
+        // Use AgentService to upload the image
+        final agentService = AgentService();
         final uploadedUrl = await agentService.uploadImage(_avatarImage!);
         setState(() {
           _uploadedImageUrl = uploadedUrl;
           _avatarImage = null;
         });
       } catch (e) {
+        print('Failed to upload image: $e');
         showCupertinoDialog(
           context: context,
           builder: (context) {
             return CupertinoAlertDialog(
               title: Text('Upload Failed'),
-              content: Text('Failed to upload image: ${e.toString()}'),
+              content: Text('Failed to upload image: $e'),
               actions: [
                 CupertinoDialogAction(
                   child: Text('OK'),
@@ -72,6 +75,7 @@ class _ConfigCreatePageState extends State<ConfigCreatePage> {
       }
     }
   }
+
 
   void _pickColor(String colorType) {
     showCupertinoDialog(
@@ -133,9 +137,11 @@ class _ConfigCreatePageState extends State<ConfigCreatePage> {
         ),
       );
     } else {
-      return CircleAvatar
-
-        (child: Image.asset('assets/haiva.png', width: 40, height: 40),radius: 25, backgroundColor: CupertinoColors.white,) ;
+      return CircleAvatar(
+        child: Image.asset('assets/haiva.png', width: 40, height: 40),
+        radius: 25,
+        backgroundColor: CupertinoColors.white,
+      );
     }
   }
 
@@ -154,7 +160,7 @@ class _ConfigCreatePageState extends State<ConfigCreatePage> {
           Spacer(),
           CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: _pickImage,
+            onPressed: () => _pickImage(context),
             child: Text('Upload Image', style: TextStyle(fontSize: 14)),
           ),
         ],

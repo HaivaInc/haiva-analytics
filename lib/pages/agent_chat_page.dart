@@ -7,6 +7,7 @@ import '../models/agent.dart';
 import '../providers/workspace_provider.dart';
 import '../services/workspace_id_service.dart';
 import 'configure_page.dart';
+import 'haiva-flow/flow_chat_haiva.dart';
 
 class AgentsChatPage extends StatefulWidget {
   final String agentid;
@@ -126,7 +127,7 @@ class _AgentsChatPageState extends State<AgentsChatPage> {
                           Navigator.push(
                             context,
                             CupertinoPageRoute(
-                              builder: (context) => ChatPage(agentId: agent.id??''),
+                              builder: (context) => HaivaChatScreen(agentId: agent.id??''),
                             ),
                           );
                         },

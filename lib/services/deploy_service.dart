@@ -1,11 +1,16 @@
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
+import 'package:logger/logger.dart';
 import 'dart:convert';
 
 import '../constants.dart';
 
 class DeployService {
-  final String baseUrl = 'https://app-haiva.gateway.apiplatform.io/v2';
+  final String baseUrl = 'https://app-haiva.gateway.apiplatform.io/v3';
   final String? authToken = Constants.accessToken;
+  final String? workspaceId = Constants.workspaceId;
+
+  var logger = Logger();
   Future<http.Response> deployHaivaAgent(String agentId) async {
     final url = Uri.parse('$baseUrl/deployHaivaAgent').replace(
       queryParameters: {
@@ -43,12 +48,13 @@ class DeployService {
 
 
   Future<http.Response> deployHaivaDb(String agentId, Map<String, dynamic> dbConfig) async {
-    final url = Uri.parse('$baseUrl/deployHaivaAgent').replace(
-      queryParameters: {
-        'workspace-id': Constants.workspaceId,
-        'agent-id': agentId,
-      },
-    );
+    // final url = Uri.parse('$baseUrl/deployHaivaAgent').replace(
+    //   queryParameters: {
+    //     'workspace-id': Constants.workspaceId,
+    //     'agent-id': agentId,
+    //   },
+    // );
+    final url = Uri.parse('$baseUrl/deployHaivaAgent?workspaceId=$workspaceId&agentId=$agentId');
 
     try {
       final response = await http.post(
@@ -57,13 +63,12 @@ class DeployService {
           'Authorization': authToken!,
           'Content-Type': 'application/json',
         },
-
         body: json.encode(dbConfig),
       );
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         print('HAIVA Agent deployed successfully');
-        print('Response body: ${response.body}');
+        logger.d(dbConfig);
         return response;
       } else {
         print('Failed to deploy HAIVA Agent. Status code: ${response.statusCode}');
@@ -71,7 +76,7 @@ class DeployService {
         throw Exception('Failed to deploy HAIVA Agent');
       }
     } catch (e) {
-      print(json.encode(dbConfig));
+
       print('Error deploying HAIVA Agent: $e');
       throw Exception('Error deploying HAIVA Agent: $e');
     }

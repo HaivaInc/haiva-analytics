@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../services/db_service.dart';
+import '../theme/colortheme.dart';
 import 'connection_page.dart';
 
 class DatabaseForm extends StatefulWidget {
@@ -115,9 +116,10 @@ class _DatabaseFormState extends State<DatabaseForm> {
       child: CupertinoTextField(
         controller: controller,
         placeholder: placeholder,
+        placeholderStyle: TextStyle(color: CupertinoColors.label),
         prefix: Padding(
           padding: EdgeInsets.only(left: 10),
-          child: Icon(icon, color: CupertinoColors.systemGrey),
+          child: Icon(icon, color: Color(0xFF19437D)),
         ),
         suffix: isPassword
             ? Padding(
@@ -147,11 +149,11 @@ class _DatabaseFormState extends State<DatabaseForm> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
+    return Scaffold(
+      appBar: CupertinoNavigationBar(
         middle: Text('Database Connection'),
       ),
-      child: SafeArea(
+      body: SafeArea(
         child: _isLoading
             ? Center(child: CupertinoActivityIndicator())
             : CustomScrollView(
@@ -165,6 +167,23 @@ class _DatabaseFormState extends State<DatabaseForm> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
+
+                      CupertinoSegmentedControl<String>(
+                        selectedColor: ColorTheme.primary,
+                        borderColor: ColorTheme.primary,
+                        children: {
+                          'mysql': Text('MySQL', style: TextStyle(fontSize: 10)),
+                          'postgresql': Text('POSTGRESQL', style: TextStyle(fontSize: 10)),
+                          'sqlserver': Text('MS SQLSERVER', style: TextStyle(fontSize: 10)),
+                        },
+                        onValueChanged: (value) {
+                          setState(() {
+                            _databaseType = value;
+                          });
+                        },
+                        groupValue: _databaseType,
+                      ),
+                      SizedBox(height: 16),
                       _buildTextField(
                         controller: _databaseNameController,
                         placeholder: 'Database Name',
@@ -181,6 +200,7 @@ class _DatabaseFormState extends State<DatabaseForm> {
                         icon: CupertinoIcons.globe,
                       ),
                       _buildTextField(
+
                         controller: _portController,
                         placeholder: 'Port',
                         icon: CupertinoIcons.number,
@@ -197,22 +217,10 @@ class _DatabaseFormState extends State<DatabaseForm> {
                         icon: CupertinoIcons.lock,
                         isPassword: true,
                       ),
-                      SizedBox(height: 16),
-                      CupertinoSegmentedControl<String>(
-                        children: {
-                          'mysql': Text('MySQL', style: TextStyle(fontSize: 10)),
-                          'postgresql': Text('POSTGRESQL', style: TextStyle(fontSize: 10)),
-                          'mysqlserver': Text('MS SQLSERVER', style: TextStyle(fontSize: 10)),
-                        },
-                        onValueChanged: (value) {
-                          setState(() {
-                            _databaseType = value;
-                          });
-                        },
-                        groupValue: _databaseType,
-                      ),
+
                       SizedBox(height: 24),
-                      CupertinoButton.filled(
+                      CupertinoButton(
+                        color: ColorTheme.primary,
                         borderRadius: BorderRadius.circular(8),
                         child: Text('Submit'),
                         onPressed: _submitForm,

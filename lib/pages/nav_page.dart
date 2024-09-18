@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:haivanalytics/pages/agent_chat_page.dart';
+import 'package:haivanalytics/pages/haiva-flow/flow_chat_haiva.dart';
 import 'package:haivanalytics/pages/profile_page.dart';
 import 'package:haivanalytics/pages/settings_page.dart';
+import 'package:haivanalytics/theme/colortheme.dart';
 import 'chat_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
@@ -24,8 +27,10 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     super.initState();
     _pageController = PageController(initialPage: 0);
     _pages = [
+      HaivaChatScreen(agentId: widget.agentId),
+
       SettingsPage(agentId: widget.agentId),
-      ChatPage(agentId: widget.agentId),
+
       ProfilePage(agentId: widget.agentId),
     ];
   }
@@ -40,21 +45,28 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
   @override
   Widget build(BuildContext context) {
     return SafeArea(
-      child: CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: CupertinoSegmentedControl<int>(
+      child: Scaffold(
+        appBar: AppBar(
+
+          backgroundColor: ColorTheme.primary,
+          actions: [
+            CupertinoSegmentedControl<int>(
+         selectedColor: ColorTheme.accent,
+
+          borderColor:ColorTheme.secondary ,
             children: const {
               0: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text('Settings'),
+                child: Text('Chat'),
               ),
               1: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text('Chat'),
+                child: Text('Settings'),
               ),
+
               2: Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text('profile'),
+                child: Text('Profile'),
               ),
             },
             onValueChanged: (int index) {
@@ -64,9 +76,9 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
               });
             },
             groupValue: _selectedIndex,
-          ),
+          )],
         ),
-        child: SafeArea(
+        body: SafeArea(
           child: PageView(
             controller: _pageController,
             onPageChanged: (index) {

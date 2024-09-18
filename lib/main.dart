@@ -6,6 +6,8 @@ import 'package:haivanalytics/pages/onboard.dart';
 import 'package:haivanalytics/providers/workspace_provider.dart';
 import 'package:haivanalytics/providers/zoho_provider.dart';
 import 'package:haivanalytics/services/auth_service.dart';
+import 'package:haivanalytics/statemanagement/chatstate.dart';
+import 'package:haivanalytics/theme/colortheme.dart';
 import 'package:provider/provider.dart';
 import 'providers/agent_provider.dart';
 
@@ -23,40 +25,103 @@ class MyApp extends StatelessWidget {
         builder: (context, agentProvider, child) {
           return MultiProvider(
             providers: [
+              ChangeNotifierProvider(create: (context) => ChatProvider()),
+
+              ChangeNotifierProvider(create: (_) => AgentProvider()),
               ChangeNotifierProvider(create: (_) => WorkspaceProvider()),
               ChangeNotifierProvider(create: (_) => ConfigurationProvider()),
               Provider<AuthService>(create: (_) => AuthService()),
             ],
-            child: CupertinoApp(
-       color: CupertinoDynamicColor.maybeResolve(Colors.deepPurpleAccent, context),
+       //      child: CupertinoApp(
+       // color: CupertinoDynamicColor.maybeResolve(Colors.deepPurpleAccent, context),
+       //        debugShowCheckedModeBanner: false,
+       //        title: 'Agent Management',
+       //        theme: CupertinoThemeData(
+       //              applyThemeToAll: true,
+       //
+       //
+       //               barBackgroundColor: themeColor,
+       //          brightness: Brightness.light,
+       //          scaffoldBackgroundColor: Colors.grey[50]  ,
+       //          primaryColor: themeColor,
+       //           textTheme: CupertinoTextThemeData(
+       //
+       //            navTitleTextStyle: GoogleFonts.raleway(color: Colors.white),
+       //            navLargeTitleTextStyle: GoogleFonts.raleway(color: Colors.white),
+       //            navActionTextStyle: GoogleFonts.raleway(color: Colors.white),
+       //            tabLabelTextStyle: GoogleFonts.raleway(color: Colors.black54),
+       //            dateTimePickerTextStyle: GoogleFonts.raleway(color: themeColor),
+       //            textStyle: GoogleFonts.raleway(color: Colors.black),
+       //            actionTextStyle: GoogleFonts.raleway(color: themeColor),
+       //            pickerTextStyle: GoogleFonts.raleway(color: themeColor),
+       //         primaryColor: themeColor,
+       //
+       //          ),
+       //
+       //
+       //        ),
+       //        // Set theme mode based on provider
+       //        home: OnboardingPage(),
+       //      ),
+            child: MaterialApp(
+
               debugShowCheckedModeBanner: false,
-              title: 'Agent Management',
-              theme: CupertinoThemeData(
-                    applyThemeToAll: true,
 
+              theme: ThemeData(
+                // Apply overall theme properties
 
-                     barBackgroundColor: themeColor,
                 brightness: Brightness.light,
-                scaffoldBackgroundColor: Colors.grey[50]  ,
-                primaryColor: themeColor,
-                 textTheme: CupertinoTextThemeData(
-
-                  navTitleTextStyle: GoogleFonts.raleway(color: Colors.white),
-                  navLargeTitleTextStyle: GoogleFonts.raleway(color: Colors.white),
-                  navActionTextStyle: GoogleFonts.raleway(color: Colors.white),
-                  tabLabelTextStyle: GoogleFonts.raleway(color: Colors.black54),
-                  dateTimePickerTextStyle: GoogleFonts.raleway(color: themeColor),
-                  textStyle: GoogleFonts.raleway(color: Colors.black),
-                  actionTextStyle: GoogleFonts.raleway(color: themeColor),
-                  pickerTextStyle: GoogleFonts.raleway(color: themeColor),
-               primaryColor: themeColor,
-
+                primaryColor: ColorTheme.primary,
+              scaffoldBackgroundColor: Colors.grey[50],
+useMaterial3: true,
+                // AppBar theme
+                appBarTheme: AppBarTheme(
+                  color: themeColor, // background color for the AppBar
+                  titleTextStyle: GoogleFonts.raleway(color: Colors.white), // Text style for the AppBar title
                 ),
 
+                // Text theme for general texts in the app
+                textTheme: TextTheme(
+                  bodyLarge: GoogleFonts.raleway(color: Colors.black), // General text color
+                  bodyMedium: GoogleFonts.raleway(color: Colors.black),
+                  labelLarge: GoogleFonts.raleway(color: themeColor), // Text on buttons
+                  titleLarge: GoogleFonts.raleway(color: Colors.white), // AppBar title text
+                ),
 
-              ),
-              // Set theme mode based on provider
-              home: OnboardingPage(),
+                // Tab bar label styles
+                tabBarTheme: TabBarTheme(
+
+                  labelColor: Colors.black54, // Tab label text color
+                  unselectedLabelColor: Colors.grey, // Tab unselected text color
+                  labelStyle: GoogleFonts.raleway(color: Colors.black54), // Tab label text style
+                ),
+
+                // Button theme
+                elevatedButtonTheme: ElevatedButtonThemeData(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: themeColor, // Background color of the button
+                    textStyle: GoogleFonts.raleway(color: Colors.white), // Text style for the button
+                  ),
+                ),
+
+                // Text button theme (e.g. for actions like in AlertDialogs)
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(
+                    foregroundColor: themeColor, textStyle: GoogleFonts.raleway(color: themeColor), // Text style for action buttons
+                  ),
+                ),
+
+                // Other elements like DatePicker can be customized similarly
+                // Date Picker theme
+                inputDecorationTheme: InputDecorationTheme(
+                  labelStyle: GoogleFonts.raleway(color: themeColor), // DateTime picker text style
+                  focusedBorder: UnderlineInputBorder(
+                    borderSide: BorderSide(color: themeColor),
+                  ),
+                ),
+              )
+,
+                home: OnboardingPage(),
             ),
           );
         },

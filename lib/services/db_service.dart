@@ -5,6 +5,7 @@ import '../constants.dart';
 import '../models/agent.dart';
 
 class DbService {
+  static const String baseUrl1 = 'https://app-haiva.gateway.apiplatform.io/v1';
   static const String baseUrl = 'https://app-haiva.gateway.apiplatform.io/v2';
   static  String? workspaceId = Constants.workspaceId;
   static  String? orgId = Constants.orgId;
@@ -57,8 +58,7 @@ class DbService {
   }
   // Get Database Connection Info
   Future<http.Response> getDatabaseConnection() async {
-    final url = Uri.parse('$baseUrl/getDatabaseConnectionInfo?workspaceId=$workspaceId&to_decrypt=true');
-
+    final url = Uri.parse('$baseUrl1/getDatabaseConnectionInfo?workspaceId=$workspaceId&to_decrypt=true');
 
     return await http.get(url);
   }
@@ -102,6 +102,28 @@ class DbService {
     });
 
     return await http.patch(url, headers: headers, body: body);
+  }
+
+  Future<http.Response> saveDbConfig(String agentId,Map<String, dynamic> dbConfig) async {
+    final url = Uri.parse('$baseUrl1/saveHaivaAgentConfig?agent-id=${agentId}');
+    print("agentid = ${agentId}");
+    final response = await http.post(
+      url,
+      headers: {
+        'Authorization': 'Bearer $token',
+        'Content-Type': 'application/json',
+      },
+      body: json.encode(dbConfig),
+    );
+
+    if (response.statusCode == 200  || response.statusCode == 201) {
+      print('db saved successfully');
+      return response;
+
+    } else {
+      // Handle error
+      throw Exception('Failed to update agent${response.body}');
+    }
   }
 
 

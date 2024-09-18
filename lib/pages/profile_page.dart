@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 import '../constants.dart';
 import '../models/agent.dart';
@@ -15,25 +16,24 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final agentProvider = Provider.of<AgentProvider>(context, listen: false);
-
-    if (agentProvider.agents.isEmpty) {
-      agentProvider.fetchAgents(agentId);
-    }
     return Consumer<AgentProvider>(
       builder: (context, agentProvider, child) {
-        final Agent? agent = agentProvider.agents.firstWhere(
-              (a) => a.id == agentId,
-        );
-
-        return CupertinoPageScaffold(
-          // navigationBar: CupertinoNavigationBar(
-          //   middle: Text('Profile'),
-          // ),
-          child: SafeArea(
-            child: agent == null
-                ? Center(child: CupertinoActivityIndicator())
-                : _buildProfileContent(context, agent),
+        return Scaffold(
+          body: SafeArea(
+            child: FutureBuilder<Agent>(
+              future: agentProvider.getAgentById(agentId),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return Center(child: CupertinoActivityIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(child: Text('Error: ${snapshot.error}'));
+                } else if (!snapshot.hasData) {
+                  return Center(child: Text('No agent data found'));
+                } else {
+                  return _buildProfileContent(context, snapshot.data!);
+                }
+              },
+            ),
           ),
         );
       },
@@ -46,8 +46,8 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          SizedBox(height: 16),
-          _buildAvatar(context, agent),
+          // SizedBox(height: 16),
+          // _buildAvatar(context, agent),
           SizedBox(height: 16),
           _buildAgentInfo(context, agent),
           SizedBox(height: 16),
@@ -59,38 +59,39 @@ class ProfilePage extends StatelessWidget {
     );
   }
 
-  Widget _buildAvatar(BuildContext context, Agent agent) {
-    print('agent.agentConfigs.image: ${agent.agentConfigs!.image}');
-    return CircleAvatar(
-      radius: 30,
-      backgroundColor: Color(0xFF19437D),
-      backgroundImage: agent.agentConfigs?.image != null
-          ? NetworkImage(agent.agentConfigs!.image!)
-          : null,
-      child: agent.agentConfigs?.image == null
-          ? Text(
-        agent.name!.toUpperCase(),
-        style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.copyWith(
-          color: CupertinoColors.white,
-        ),
-      )
-          : null,
-    );
-  }
+  // Widget _buildAvatar(BuildContext context, Agent agent) {
+  //   return CircleAvatar(
+  //     radius: 30,
+  //     backgroundColor: Color(0xFF19437D),
+  //     backgroundImage: agent.agentConfigs?.image != null
+  //         ? NetworkImage(agent.agentConfigs!.image!)
+  //         : null,
+  //     child: agent.agentConfigs?.image == null
+  //         ? Text(
+  //       agent.name?.toUpperCase().substring(0, 1) ?? '?',
+  //       style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.copyWith(
+  //         color: CupertinoColors.white,
+  //       ),
+  //     )
+  //         : null,
+  //   );
+  // }
 
   Widget _buildAgentInfo(BuildContext context, Agent agent) {
     return Column(
       children: [
         Text(
-        agent.name!,
-          style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.copyWith(
-            color: CupertinoColors.activeBlue,
-          ),
-          textAlign: TextAlign.center,
+          agent.name ?? 'Unknown Agent',
+          textAlign:  TextAlign.center,
+          style:TextStyle(
+            fontFamily: GoogleFonts.raleway().fontFamily,
+            fontWeight: FontWeight.bold,
+            fontSize: 24
+        ),
         ),
         SizedBox(height: 8),
         Text(
-          'Agent ID: ${agent.id}',
+          'Agent ID: ${agent.id ?? 'Unknown ID'}',
           style: CupertinoTheme.of(context).textTheme.textStyle.copyWith(
             fontSize: 14,
             color: CupertinoColors.systemGrey,
@@ -105,12 +106,15 @@ class ProfilePage extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildDetailItem(context, 'Name', agent.agentConfigs?.displayName??'', CupertinoIcons.person),
-        _buildDetailItem(context, 'Type', agent.type??'', CupertinoIcons.tag),
-        _buildDetailItem(context, 'Description', agent.description??'', CupertinoIcons.info),
-        _buildDetailItem(context, 'Deployment Status',
-            agent.isDeployed??true ? 'Deployed' : 'Not Deployed',
-            agent.isDeployed??false ? CupertinoIcons.check_mark_circled : CupertinoIcons.xmark_circle),
+        _buildDetailItem(context, 'Name', agent.agentConfigs?.displayName ?? 'N/A', CupertinoIcons.person),
+        _buildDetailItem(context, 'Type', agent.type ?? 'N/A', CupertinoIcons.tag),
+        _buildDetailItem(context, 'Description', agent.description ?? 'N/A', CupertinoIcons.info),
+        _buildDetailItem(
+            context,
+            'Deployment Status',
+            agent.isDeployed ?? false ? 'Deployed' : 'Not Deployed',
+            agent.isDeployed ?? false ? CupertinoIcons.check_mark_circled : CupertinoIcons.xmark_circle
+        ),
       ],
     );
   }
@@ -167,16 +171,11 @@ class ProfilePage extends StatelessWidget {
     try {
       bool success = await authService.logout();
       if (success) {
-        authService.isAuthenticated() == false;
- // Constants.accessToken = null;
- // Constants.workspaceId = null;
- // Constants.orgId = null;
         Navigator.pushAndRemoveUntil(
           context,
           CupertinoPageRoute(builder: (context) => OnboardingPage()),
-              (route) => false, // Clear the entire navigation stack
+              (route) => false,
         );
-
       } else {
         _showErrorDialog(context, 'Logout failed. Please try again.');
       }

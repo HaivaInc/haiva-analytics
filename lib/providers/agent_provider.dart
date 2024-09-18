@@ -69,10 +69,10 @@ class AgentProvider with ChangeNotifier {
   bool _speechToTextEnabled = true;
   bool get speechToTextEnabled => _speechToTextEnabled;
   // New properties for AgentConfig
-  String _name = '';
-  String _description = '';
-  String _displayName = '';
-  String _image = '';
+  String _name = 'HAIVA';
+  String _description = 'ABOUT HAIVA AGENT';
+  String _displayName = 'HAIVA';
+  String _image = 'https://console.haiva.ai/assets/images/haiva.png';
   Map<String, dynamic> _colors = {
     'primary': '#19437D',
     'secondary': '#FFFFFF',

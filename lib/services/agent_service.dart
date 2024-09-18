@@ -58,31 +58,40 @@ class AgentService {
       throw Exception('Failed to load agents');
     }}
 
-    Future<String> uploadImage(File image) async {
 
+  Future<String> uploadImage(File image) async {
     final request = http.MultipartRequest(
       'POST',
-      Uri.parse('https://services.apiplatform.io/v1/data/haiva/haiva/s3connectors/haiva.apiplatform.io/file?'),
+      Uri.parse('https://app-haiva.gateway.apiplatform.io/v1/insertAvatar'),
     )
+      ..headers['Authorization'] = 'Bearer ${Constants.accessToken}' // Add the authorization header
+      ..fields['workspaceId'] = Constants.workspaceId! // Add the workspaceId field
       ..files.add(
         http.MultipartFile.fromBytes(
-          'multipartFile',
+          'avatarFile',
           await image.readAsBytes(),
           filename: image.path.split('/').last,
-
           contentType: MediaType.parse(lookupMimeType(image.path) ?? 'application/octet-stream'),
         ),
       );
 
     final response = await request.send();
-    if (response.statusCode == 200) {
+    if (response.statusCode == 200 || response.statusCode == 201) {
       final responseData = await response.stream.bytesToString();
       final Map<String, dynamic> data = json.decode(responseData);
-      return data['s3URL'];
+      if (data['Url'] != null && data['Url'] is String) {
+        print('Url: ${data['Url']}');
+        return data['Url'] as String;
+      } else {
+        throw Exception('Invalid response format: Url is missing or not a string');
+      }
     } else {
-      throw Exception('Failed to upload image');
+      final responseData = await response.stream.bytesToString();
+      final errorMessage = json.decode(responseData)['message'] ?? 'Failed to upload image';
+      throw Exception(errorMessage);
     }
   }
+
 
   Future<String> createAgent(Agent agent) async {
     final response = await http.post(
@@ -117,7 +126,7 @@ print("agentid = ${agent.id}");
     final response = await http.post(
       url,
       headers: {
-      //   'Authorization': 'Bearer $token',
+         'Authorization': 'Bearer $token',
          'Content-Type': 'application/json',
        },
       body: json.encode({

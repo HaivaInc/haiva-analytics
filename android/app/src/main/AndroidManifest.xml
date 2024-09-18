@@ -1,10 +1,22 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:hardwareAccelerated="false"
+        android:required="false" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
+    <uses-permission android:name="android.permission.CAMERA"/>
+
     <uses-permission android:name="android.permission.INTERNET" />
-    <uses-permission android:name="android.permission.RECORD_AUDIO" />
-    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS" />
-    <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
-    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"/>
-    <application android:label="Haivaanalytics"  android:icon="@mipmap/ic_launcher">
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-feature android:name="android.hardware.camera.autofocus" />
+    <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+    <uses-permission android:name="android.permission.AUDIO_CAPTURE"/>
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+
+    <application android:label="Haiva Analytics"  android:icon="@mipmap/ic_launcher">
         <activity android:name=".MainActivity" android:exported="true" android:launchMode="singleTop" android:theme="@style/LaunchTheme" android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode" android:hardwareAccelerated="true" android:windowSoftInputMode="adjustResize">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
@@ -26,10 +38,14 @@
 
          In particular, this is used by the Flutter engine in io.flutter.plugin.text.ProcessTextPlugin. -->
     <queries>
+        <package android:name="com.google.android.googlequicksearchbox"/>
         <intent>
-            <action android:name="android.intent.action.PROCESS_TEXT"/>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+
             <!--            <action android:name="android.speech.RecognitionService" />-->
-            <data android:mimeType="text/plain"/>
+
         </intent>
     </queries>
 </manifest>

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:haivanalytics/pages/configure_page.dart';
 import 'package:haivanalytics/pages/connection_page.dart';
 import 'package:haivanalytics/pages/talk_page.dart';
+import 'package:haivanalytics/theme/colortheme.dart';
 
 import 'deploy_info.dart';
 
@@ -63,11 +64,11 @@ class _SettingsPageState extends State<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
+    return Scaffold(
       // navigationBar: const CupertinoNavigationBar(
       //   middle: Text('Settings'),
       // ),
-      child: SafeArea(
+      body: SafeArea(
         child: Column(
           children: [
             Expanded(
@@ -78,7 +79,8 @@ class _SettingsPageState extends State<SettingsPage> {
                     context,
                     'Agent Configuration',
                     'Collect details like color name and description of the agent.',
-                    Colors.blue.shade100,
+                    //Colors.blue.shade100,
+                    ColorTheme.primary.withOpacity(0.6) ,
                     0,
                     CupertinoIcons.info,
                   ),
@@ -86,7 +88,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     context,
                     'Configure TALK/SPEECH',
                     'Configure the language and communication settings, and adjust various linguistic parameters to ensure effective understanding and interaction.',
-                    Colors.blue.shade300,
+                    ColorTheme.primary.withOpacity(0.7) ,
                     1,
                     CupertinoIcons.textformat_alt,
                   ),
@@ -94,7 +96,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     context,
                     'Fetching from database',
                     'Uploading and organizing the data that will be used. Import various data sources to ensure all necessary information is available for accurate responses.',
-                    Colors.blue.shade200,
+                    ColorTheme.primary.withOpacity(0.8) ,
                     2,
                     CupertinoIcons.cloud_download,
                   ),
@@ -103,7 +105,7 @@ class _SettingsPageState extends State<SettingsPage> {
                     context,
                     'Deploy Information',
                     'Set up the deployment environment, and launch the configuration to start interacting with users. Ensure everything is live and operational for real-world usage.',
-                    Colors.blue.shade400,
+                    ColorTheme.primary.withOpacity(0.9) ,
                     3,
                     CupertinoIcons.device_phone_portrait,
                   ),

@@ -1,6 +1,7 @@
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:haivanalytics/theme/colortheme.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 import 'dart:io';
@@ -67,43 +68,53 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
     return Color(int.parse(hexColor, radix: 16));
   }
 
-  Future<void> _pickImage() async {
+  Future<void> _pickImage(BuildContext context) async {
     final ImagePicker _picker = ImagePicker();
     final XFile? image = await _picker.pickImage(source: ImageSource.gallery);
 
     if (image != null) {
-      setState(() {
-        _avatarImage = File(image.path);
-        _uploadedImageUrl = null;
-      });
+      if (mounted) { // Check if widget is still mounted
+        setState(() {
+          _avatarImage = File(image.path);
+          _uploadedImageUrl = null;
+        });
+      }
 
       try {
-        final agentService = Provider.of<AgentService>(context, listen: false);
+        final agentService = AgentService();
         final uploadedUrl = await agentService.uploadImage(_avatarImage!);
-        setState(() {
-          _uploadedImageUrl = uploadedUrl;
-          _avatarImage = null;
-        });
+
+        if (mounted) { // Check if widget is still mounted
+          setState(() {
+            _uploadedImageUrl = uploadedUrl;
+            _avatarImage = null;
+          });
+        }
       } catch (e) {
-        showCupertinoDialog(
-          context: context,
-          builder: (context) {
-            return CupertinoAlertDialog(
-              title: Text('Upload Failed'),
-              content: Text('Failed to upload image: ${e.toString()}'),
-              actions: [
-                CupertinoDialogAction(
-                  child: Text('OK'),
-                  onPressed: () => Navigator.of(context).pop(),
-                ),
-              ],
-            );
-          },
-        );
+        print('Failed to upload image: $e');
+
+        if (mounted) { // Check if widget is still mounted
+          showCupertinoDialog(
+            context: context,
+            builder: (context) {
+              return CupertinoAlertDialog(
+                title: Text('Upload Failed'),
+                content: Text('Failed to upload image: $e'),
+                actions: [
+                  CupertinoDialogAction(
+                    child: Text('OK'),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ],
+              );
+            },
+          );
+        }
       }
     }
   }
-
   void _pickColor(String colorType) {
     showCupertinoDialog(
       context: context,
@@ -253,7 +264,7 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
           Spacer(),
           CupertinoButton(
             padding: EdgeInsets.zero,
-            onPressed: _pickImage,
+            onPressed: () => _pickImage(context),
             child: Text('Upload Image', style: TextStyle(fontSize: 14)),
           ),
         ],
@@ -266,11 +277,13 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Edit Agent'),
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: ColorTheme.primary,
+        title: Text('Edit Agent'),
       ),
-      child: SafeArea(
+
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
           child: Column(
@@ -309,7 +322,7 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
                         },
                         displayName: _displayNameController.text,
                         image: _uploadedImageUrl ?? '',
-                        description: '',
+                        description: _descriptionController.text,
                       ),
                     );
 
@@ -338,7 +351,7 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
                     }
                   },
                   child: Text('Save Changes'),
-                  color: Color(0xFF19437D),
+                  color: ColorTheme.primary,
                 ),
               ),
             ],

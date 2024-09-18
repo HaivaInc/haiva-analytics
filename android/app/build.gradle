@@ -25,12 +25,21 @@ if (flutterVersionName == null) {
 
 android {
     namespace = "com.haiva.haivanalytics"
-    compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    compileSdkVersion 34
+    compileSdk flutter.compileSdkVersion
+    ndkVersion flutter.ndkVersion
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
     }
 
     defaultConfig {
@@ -56,6 +65,8 @@ android {
         }
     }
 }
+// Force Kotlin version for compatibility with dependencies
+
 
 flutter {
     source = "../.."
