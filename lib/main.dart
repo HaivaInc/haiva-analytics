@@ -26,7 +26,6 @@ class MyApp extends StatelessWidget {
           return MultiProvider(
             providers: [
               ChangeNotifierProvider(create: (context) => ChatProvider()),
-
               ChangeNotifierProvider(create: (_) => AgentProvider()),
               ChangeNotifierProvider(create: (_) => WorkspaceProvider()),
               ChangeNotifierProvider(create: (_) => ConfigurationProvider()),
@@ -69,11 +68,13 @@ class MyApp extends StatelessWidget {
 
               theme: ThemeData(
                 // Apply overall theme properties
-
-                brightness: Brightness.light,
+                useMaterial3: true,
                 primaryColor: ColorTheme.primary,
+                visualDensity: VisualDensity.adaptivePlatformDensity,
+                brightness: Brightness.light,
+
               scaffoldBackgroundColor: Colors.grey[50],
-useMaterial3: true,
+
                 // AppBar theme
                 appBarTheme: AppBarTheme(
                   color: themeColor, // background color for the AppBar
@@ -121,7 +122,8 @@ useMaterial3: true,
                 ),
               )
 ,
-                home: OnboardingPage(),
+                home:Consumer<ChatProvider>(
+    builder: (context, chatProvider, child) {return OnboardingPage();})
             ),
           );
         },

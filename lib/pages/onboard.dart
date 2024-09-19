@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -34,7 +34,7 @@ class OnboardingPage extends StatelessWidget {
                 // CupertinoIcons.graph_circle_fill,
 
                 alignment: Alignment.center,
-                color: CupertinoColors.white,
+                color: Colors.white,
               ),
             ),
             // Expanded widget to center the image carousel
@@ -100,13 +100,13 @@ class OnboardingPage extends StatelessWidget {
               ),
             ),
             SizedBox(height: 30),
-            CupertinoButton(
-              color: Colors.white,
+           ElevatedButton(
+
               child: Text(
                 'Get Started',
                 style: GoogleFonts.raleway(
                   fontSize: 16,
-                  color: Color(0xFF19437D),
+                  color: Colors.white,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -115,7 +115,7 @@ class OnboardingPage extends StatelessWidget {
                 if (await authService.isAuthenticated()) {
                   Navigator.push(
                     context,
-                    CupertinoPageRoute(
+                MaterialPageRoute(
                       builder: (context) => Constants.agentId == null
                           ? AgentSelectionPage()
                           : HaivaChatScreen(agentId: Constants.agentId!),
@@ -124,8 +124,8 @@ class OnboardingPage extends StatelessWidget {
 
                 }
               },
-              padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
-              borderRadius: BorderRadius.circular(25),
+              // padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+              // borderRadius: BorderRadius.circular(25),
             ),
             SizedBox(height: 30),
           ],

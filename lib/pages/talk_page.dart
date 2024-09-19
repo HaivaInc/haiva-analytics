@@ -96,6 +96,8 @@ class _TalkPageState extends State<TalkPage> {
                         selectedColor: ColorTheme.primary,
                         onSelected: (bool selected) {
                           setState(() {
+                            print('selected: $selected');
+                            print('language: $language');
                             agentProvider.toggleLanguageSelection(language);
                           });
                         },
@@ -128,7 +130,7 @@ class _TalkPageState extends State<TalkPage> {
                     final agent = Agent(
                       id: widget.agentId,
                       agentConfigs: AgentConfigs(
-                        languages: agentProvider.selectedLanguages,
+                        languages: agentProvider.getSelectedLanguageCodes(),
                         isSpeech2text: agentProvider.speechToTextEnabled,
                         displayName: agentProvider.displayName,
                         image: agentProvider.image,

@@ -78,10 +78,10 @@ class _ConnectionTablesPageState extends State<ConnectionTablesPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Tables in ${widget.databaseName}'),
-        trailing: CupertinoButton(
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Tables in ${widget.databaseName}'),
+        actions: [CupertinoButton(
           padding: EdgeInsets.zero,
           child: Text('Done'),
           onPressed: _selectedTables.isNotEmpty
@@ -91,9 +91,9 @@ class _ConnectionTablesPageState extends State<ConnectionTablesPage> {
             Navigator.of(context).pop(_selectedTables.toList());
           }
               : null,
-        ),
+        )],
       ),
-      child: SafeArea(
+      body: SafeArea(
         child: _isLoading
             ? Center(child: CupertinoActivityIndicator())
             : _tables.isEmpty

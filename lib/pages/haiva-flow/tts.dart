@@ -18,6 +18,8 @@ class TextToSpeechService {
     if (response.statusCode == 200) {
       return response.bodyBytes;  // This returns the audio data as bytes.
     } else {
+      print('Error converting text to speech: ${response.statusCode}');
+      print('Error converting text to speech: ${response.body}');
       throw Exception('Failed to convert text to speech');
     }
   }

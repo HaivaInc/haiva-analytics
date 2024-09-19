@@ -143,6 +143,7 @@ class AgentProvider with ChangeNotifier {
         agent.name?.toLowerCase().contains(query.toLowerCase())??false).toList();
   }
 
+
   void toggleLanguageSelection(String language) {
     if (_selectedLanguages.contains(language)) {
       _selectedLanguages.remove(language);
@@ -156,10 +157,17 @@ class AgentProvider with ChangeNotifier {
     _speechToTextEnabled = value;
     notifyListeners();
   }
-
   List<String> getSelectedLanguageCodes() {
     return _selectedLanguages.map((lang) => languageCodes[lang]!).toList();
   }
+
+  //
+  // List<String> getSelectedLanguageCodes() {
+  //   print("Selected languages: $_selectedLanguages");
+  //   print("Language codes: $languageCodes");
+  //   print("Language codes for selected languages: ${_selectedLanguages.map((lang) => languageCodes[lang]!).toList()}");
+  //   return _selectedLanguages.map((lang) => languageCodes[lang]!).toList();
+  // }
 
   // New methods for AgentConfig
   void setName(String value) {

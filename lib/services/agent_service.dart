@@ -35,8 +35,7 @@ class AgentService {
   }
 
   Future<List<Agent>> getAgents() async {
-    print('token+++++: $token');
-    print('workspaceId+++++: $workspaceId');
+
     final response = await http.get(
       Uri.parse('$baseUrl2/getAllHaivaAgentsByWs?agentType=Analytics&workspace-id=$workspaceId'),
       headers: {
