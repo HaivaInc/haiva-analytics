@@ -31,8 +31,10 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   bool _speechListening = false;
+  bool stopSpeaking = false;
   String _lastWords = '';
   bool _isclicked = false;
+  bool  isSpeaking =true ;
   final TextEditingController _controller = TextEditingController();
   late List<ResponseMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();// Set to true by default since this screen is for agent messages
@@ -103,8 +105,6 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
   void _initSpeech() async {
     _speechEnabled = await _speechToText.initialize();
     _localeNames = await _speechToText.locales();
-    //print("Locales initialized: $_localeNames");
-    //print(_currentLocaleId) ;// Set default language
     setState(() {});
   }
   void _startLoading() {
@@ -118,8 +118,8 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
 
     await _speechToText.listen(
       onResult: _onSpeechResult,
-      listenFor: Duration(seconds: 30),
-      pauseFor: Duration(seconds: 3),
+      listenFor: Duration(seconds: 3000),
+      pauseFor: Duration(seconds: 300),
       localeId: _currentLocaleId,
 
 
@@ -167,7 +167,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
         String? language,
         dynamic payload}) async {
 
-     _confettiController.play(); // Start confetti animation
+    _confettiController.play(); // Start confetti animation
 
 
     String? previousText = ''; // Store previously sent text here, if available
@@ -176,7 +176,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
     _scrollToBottom();
     if (text.trim().isEmpty) return;
     if (textToSend == null || textToSend.isEmpty) {
-  //    print('No text available to send.');
+      //    print('No text available to send.');
       return;
     }
     if (displayMessage) {
@@ -191,7 +191,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
         _isloading = true;  // Set loading to true
       });
       _controller.clear();
-     _scrollToBottom();
+      _scrollToBottom();
     }
 
     final loadingMessage = ResponseMessage(
@@ -209,14 +209,14 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-        Text(
-         " ${_loadingStates[_currentIndex]}",
-          style: GoogleFonts.questrial(
-            color: ColorTheme.primary,
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+            Text(
+              " ${_loadingStates[_currentIndex]}",
+              style: GoogleFonts.questrial(
+                color: ColorTheme.primary,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
             SizedBox(width: 8), // Spacing between text and loader
             Container(
               width: 15,
@@ -239,56 +239,56 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
       if (payload != null && payload is Map<String, dynamic>) {
         formData = payload;
       }
-         final responseMessage = await HaivaService().haivaMessage(
-             text,
-             widget.agentId,
-             isMarkdown: true,
-             isButtonClicked: action,
-             sessionId: _sessionId,
-             language:_currentLocaleId,
-         //  payloadType: 'form',
-           payloadType: formData != null ? 'form' : 'text',
-           formData: payload is Map<String, dynamic> ? payload : null,
+      final responseMessage = await HaivaService().haivaMessage(
+        text,
+        widget.agentId,
+        isMarkdown: true,
+        isButtonClicked: action,
+        sessionId: _sessionId,
+        language:_currentLocaleId,
+        //  payloadType: 'form',
+        payloadType: formData != null ? 'form' : 'text',
+        formData: payload is Map<String, dynamic> ? payload : null,
 
-         );
+      );
 
-         setState(() {
-           _sessionId = responseMessage.sessionId;
-           _messages.removeLast();
-           if(responseMessage.statusCode == 200){
-             setState(() {
-               _isOnline = true;
-             });
-           }
-           else{
-             setState(() {
-               _isOnline = false;
-             });
-           }
-           if (responseMessage.haivaMessage != null && responseMessage.haivaMessage!['welcomeMessage'] is List<dynamic>) {
-             List<dynamic> welcomeMessagesList = responseMessage.haivaMessage!['welcomeMessage'] as List<dynamic>;
+      setState(() {
+        _sessionId = responseMessage.sessionId;
+        _messages.removeLast();
+        if(responseMessage.statusCode == 200){
+          setState(() {
+            _isOnline = true;
+          });
+        }
+        else{
+          setState(() {
+            _isOnline = false;
+          });
+        }
+        if (responseMessage.haivaMessage != null && responseMessage.haivaMessage!['welcomeMessage'] is List<dynamic>) {
+          List<dynamic> welcomeMessagesList = responseMessage.haivaMessage!['welcomeMessage'] as List<dynamic>;
 
-             welcomeMessages.clear(); // Clear previous messages
-             for (var item in welcomeMessagesList) {
-               if (item is Map<String, dynamic>) {
-                 WelcomeMessageData messageData = WelcomeMessageData.fromJson(item);
-                 welcomeMessages.add(messageData);
-               }
-             }
-             if (welcomeMessages.isNotEmpty) {
-               welcomemessagedata = welcomeMessages.first; // Set the first welcome message data
-             }
-           }
-             _messages.add(responseMessage);
+          welcomeMessages.clear(); // Clear previous messages
+          for (var item in welcomeMessagesList) {
+            if (item is Map<String, dynamic>) {
+              WelcomeMessageData messageData = WelcomeMessageData.fromJson(item);
+              welcomeMessages.add(messageData);
+            }
+          }
+          if (welcomeMessages.isNotEmpty) {
+            welcomemessagedata = welcomeMessages.first; // Set the first welcome message data
+          }
+        }
+        _messages.add(responseMessage);
 
-           _isloading = false;
-                 _sampleQuestions = responseMessage.haivaMessage?['showCustomQuestions']?['sampleQuestions'];
-         });
+        _isloading = false;
+        _sampleQuestions = responseMessage.haivaMessage?['showCustomQuestions']?['sampleQuestions'];
+      });
 
 
 
     } catch (e) {
-    //  print("Error: $e");
+      //  print("Error: $e");
       setState(() {
         _isloading = false; // Ensure loading state is reset on error
       });
@@ -322,34 +322,34 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
       sendMessage('hi', displayMessage: false,session_id: _sessionId=null,language:_currentLocaleId); // Reset the question clicked state
     });
   }
-   void _showRefreshAlertDialog() {
-     showDialog(
-       context: context,
-       builder: (BuildContext context) {
-         return AlertDialog(
-           backgroundColor: ColorTheme.primary,
-           title: Text('Refresh Chat', style: TextStyle(color: ColorTheme.secondary)),
-           content: Text('Do you want to refresh the chat?', style: TextStyle(color: ColorTheme.secondary,fontSize: 16)),
-           actions: <Widget>[
-             OutlinedButton(
-               child: Text('No', style: TextStyle(color: ColorTheme.secondary,fontSize: 14)),
-               onPressed: () {
-                 Navigator.of(context).pop();
-               },
-             ),
-             OutlinedButton(
-               child: Text('Yes', style: TextStyle(color: ColorTheme.secondary,fontSize: 14)),
-               onPressed: () {
-                 // Implement refresh logic here
-                  _refreshChat();
-                 Navigator.of(context).pop();
-               },
-             ),
-           ],
-         );
-       },
-     );
-   }
+  void _showRefreshAlertDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          backgroundColor: ColorTheme.primary,
+          title: Text('Refresh Chat', style: TextStyle(color: ColorTheme.secondary)),
+          content: Text('Do you want to refresh the chat?', style: TextStyle(color: ColorTheme.secondary,fontSize: 16)),
+          actions: <Widget>[
+            OutlinedButton(
+              child: Text('No', style: TextStyle(color: ColorTheme.secondary,fontSize: 14)),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+            OutlinedButton(
+              child: Text('Yes', style: TextStyle(color: ColorTheme.secondary,fontSize: 14)),
+              onPressed: () {
+                // Implement refresh logic here
+                _refreshChat();
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
 // Mapping of locale identifiers to language names
   final Map<String, String> languageNames = {
@@ -417,7 +417,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
 
     final _agentDetails = chatProvider.agentDetails;
     final _isDeployed = chatProvider.isDeployed ?? false; // Default to false if null
-   Size screenSize = MediaQuery.of(context).size;
+    Size screenSize = MediaQuery.of(context).size;
     double containerHeight = screenSize.height * 0.1;
     if (_agentDetails == null) {
       // Handle the case where _agentDetails is null
@@ -431,7 +431,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
     }
     _agentName = _agentDetails.displayName;
     return Scaffold(
-     //  backgroundColor: ColorTheme.primary.withOpacity(0.05),
+      //  backgroundColor: ColorTheme.primary.withOpacity(0.05),
       backgroundColor: Colors.white,
       appBar: AppBar(
         title: Column(
@@ -465,8 +465,8 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
 
         centerTitle: false,
         titleTextStyle: GoogleFonts.questrial(
-          color: ColorTheme.secondary,
-          fontSize: 20
+            color: ColorTheme.secondary,
+            fontSize: 20
         ),
         backgroundColor: ColorTheme.primary,
         leading: Container(
@@ -476,7 +476,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
 
             children: [
 
-             Container(
+              Container(
                 width: 50, // Ensure container width matches image size
                 height: 50, // Ensure container height matches image size
                 decoration: BoxDecoration(
@@ -586,22 +586,22 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                   ),
                 ),
 
-      Positioned(
-        bottom: 1,
-        right: 0,
-        child: Container(
-          width: 8,
-          height: 8,
-          decoration: BoxDecoration(
-            color: _isOnline ?null: Colors.red, // Green for online, Red for offline
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: Colors.white,
-              width: 1,
-            ),
-          ),
-        ),
-      ),
+              Positioned(
+                bottom: 1,
+                right: 0,
+                child: Container(
+                  width: 8,
+                  height: 8,
+                  decoration: BoxDecoration(
+                    color: _isOnline ?null: Colors.red, // Green for online, Red for offline
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white,
+                      width: 1,
+                    ),
+                  ),
+                ),
+              ),
 
             ],
           ),
@@ -610,6 +610,22 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
         ),
 
         actions: [
+          IconButton(
+            icon: Icon(
+              isSpeaking ? Icons.volume_up_rounded : Icons.volume_off,
+              color: ColorTheme.secondary,
+            ),
+            onPressed: () {
+              setState(() {
+                if (isSpeaking) {
+                  stopSpeaking; // Call method to stop speaking
+                } else {
+                  // Start speaking
+                }
+                isSpeaking = !isSpeaking; // Toggle the speaking state
+              });
+            },
+          ),
           PopupMenuButton<String>(
             popUpAnimationStyle: AnimationStyle.noAnimation,
             tooltip: 'Show languages',
@@ -620,7 +636,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
             onSelected: (String value) {
 
               setState(() {
-                 _currentLocaleId = value;
+                _currentLocaleId = value;
               });
               //     print("Selected locale: $_currentLocaleId");
               //      _speechToText.stop();
@@ -649,8 +665,8 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
               Navigator.push(
                 context,
                 CupertinoPageRoute(
-                  builder: (context) =>
-                       AgentSelectionPage()
+                    builder: (context) =>
+                        AgentSelectionPage()
 
                 ),
               );
@@ -691,7 +707,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                               sendMessage('the form data is', displayMessage: false, action: _isclicked, payload: formData);
                             },
                             agentDetails: _agentDetails,
-                            locale: _currentLocaleId,
+                            locale: _currentLocaleId, stopSpeaking: !isSpeaking,
                           )
 
 
@@ -867,10 +883,10 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                                       ),
                                       onPressed: () {
                                         if (_speechListening) {
-                                      //    _controller.clear();
+                                          //    _controller.clear();
                                           _stopListening();
                                         } else {
-                                        //  _controller.clear();
+                                          //  _controller.clear();
                                           _startListening();
 
                                         }
@@ -898,7 +914,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                                       //   sendMessage(_controller.text);
                                       //   sendMessage(_controller.text);
                                       // }
-                                       _isloading ? null : sendMessage(_controller.text);
+                                      _isloading ? null : sendMessage(_controller.text);
                                       setState(() {
                                         _controller.clear();
                                       });
@@ -911,7 +927,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                         ),
                       ),
 
-    ],
+                    ],
                   ),
                 )
 

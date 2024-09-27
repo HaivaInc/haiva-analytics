@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../services/db_service.dart';
+import '../theme/colortheme.dart';
 
 class ConnectionTablesPage extends StatefulWidget {
   final String databaseName;
@@ -80,6 +81,7 @@ class _ConnectionTablesPageState extends State<ConnectionTablesPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: ColorTheme.primary,
         title: Text('Tables in ${widget.databaseName}'),
         actions: [CupertinoButton(
           padding: EdgeInsets.zero,

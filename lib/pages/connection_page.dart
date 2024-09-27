@@ -86,6 +86,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: ColorTheme.primary,
         title: Text('Connections'),
         actions: [CupertinoButton(
           padding:  EdgeInsets.zero,
@@ -114,14 +115,15 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
           itemBuilder: (context, index) {
             final connection = _connections[index];
             return Container(
+
               padding: EdgeInsets.all(8),
               margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
               decoration: BoxDecoration(
-                color: CupertinoColors.extraLightBackgroundGray,
+                color: Colors.white,
                 borderRadius: BorderRadius.circular(6),
                 boxShadow: [
                   BoxShadow(
-                    color: CupertinoColors.systemGrey.withOpacity(0.2),
+                    color: ColorTheme.primary.withOpacity(0.2),
                     blurRadius: 2,
                     offset: Offset(0, 2),
                   ),
@@ -146,7 +148,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                 ),
                 trailing: CupertinoButton(
                   padding: EdgeInsets.zero,
-                  child: Icon(CupertinoIcons.right_chevron),
+                  child: Icon(CupertinoIcons.right_chevron,
+                  color: ColorTheme.primary,),
                   onPressed: () async {
                     final selectedTables = await Navigator.push(
                       context,

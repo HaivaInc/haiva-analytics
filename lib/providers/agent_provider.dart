@@ -9,54 +9,54 @@ class AgentProvider with ChangeNotifier {
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
   Map<String, String> languageCodes = {
-    'English (India)': 'en-IN',
-    'Tamil':'ta-IN',
-    'Telugu':'te-IN',
-    'Kannada':'kn-IN',
-    'Malayalam':'ml-IN',
-    'UK English': 'en-GB',
-    'US English': 'en-US',
-    'Italian': 'it-IT',
-    'Swedish': 'sv-SE',
-    'French Canadian': 'fr-CA',
-    'Malay': 'ms-MY',
-    'German': 'de-DE',
-    'Hebrew': 'he-IL',
-    'Australian English': 'en-AU',
-    'Indonesian': 'id-ID',
-    'French': 'fr-FR',
-    'Bulgarian': 'bg-BG',
-    'Finnish': 'fi-FI',
-    'Spanish (Spain)': 'es-ES',
-    'Spanish (Mexico)': 'es-MX',
-    'Portuguese (Brazil)': 'pt-BR',
-    'Dutch (Belgium)': 'nl-BE',
-    'Japanese': 'ja-JP',
-    'Romanian': 'ro-RO',
-    'Mandarin Chinese (China)': 'zh-CN',
-    'Vietnamese': 'vi-VN',
-    'Arabic': 'ar-001',
-    'Mandarin Chinese (Taiwan)': 'zh-TW',
-    'Greek': 'el-GR',
-    'Russian': 'ru-RU',
-    'English (Ireland)': 'en-IE',
-    'Catalan': 'ca-ES',
-    'Portuguese (Portugal)': 'pt-PT',
-    'Thai': 'th-TH',
-    'Croatian': 'hr-HR',
-    'Slovak': 'sk-SK',
+    // 'English': 'en-IN',
+     'Tamil':'ta-IN',
+     'Telugu':'te-IN',
+     'Kannada':'kn-IN',
+     'Malayalam':'ml-IN',
+    // 'UK English': 'en-GB',
+    // 'US English': 'en-US',
+    // 'Italian': 'it-IT',
+    // 'Swedish': 'sv-SE',
+    // 'French Canadian': 'fr-CA',
+    // 'Malay': 'ms-MY',
+     'German': 'de-DE',
+    // 'Hebrew': 'he-IL',
+    // 'Australian English': 'en-AU',
+    // 'Indonesian': 'id-ID',
+     'French': 'fr-FR',
+    // 'Bulgarian': 'bg-BG',
+    // 'Finnish': 'fi-FI',
+    // 'Spanish (Spain)': 'es-ES',
+    // 'Spanish (Mexico)': 'es-MX',
+    // 'Portuguese (Brazil)': 'pt-BR',
+    // 'Dutch (Belgium)': 'nl-BE',
+     'Japanese': 'ja-JP',
+    // 'Romanian': 'ro-RO',
+     'Chinese': 'zh-CN',
+    // 'Vietnamese': 'vi-VN',
+    // 'Arabic': 'ar-001',
+    // 'Mandarin Chinese (Taiwan)': 'zh-TW',
+    // 'Greek': 'el-GR',
+    // 'Russian': 'ru-RU',
+    // 'English (Ireland)': 'en-IE',
+    // 'Catalan': 'ca-ES',
+    // 'Portuguese (Portugal)': 'pt-PT',
+    // 'Thai': 'th-TH',
+    // 'Croatian': 'hr-HR',
+    // 'Slovak': 'sk-SK',
     'Hindi': 'hi-IN',
-    'Ukrainian': 'uk-UA',
-    'Cantonese (Hong Kong)': 'zh-HK',
-    'Polish': 'pl-PL',
-    'Czech': 'cs-CZ',
-    'Hungarian': 'hu-HU',
-    'Turkish': 'tr-TR',
-    'Korean': 'ko-KR',
-    'Danish': 'da-DK',
-    'Norwegian': 'nb-NO',
-    'English (South Africa)': 'en-ZA',
-    'Spanish (US)': 'es-US',
+    // 'Ukrainian': 'uk-UA',
+    // 'Cantonese (Hong Kong)': 'zh-HK',
+    // 'Polish': 'pl-PL',
+    // 'Czech': 'cs-CZ',
+    // 'Hungarian': 'hu-HU',
+    // 'Turkish': 'tr-TR',
+    // 'Korean': 'ko-KR',
+    // 'Danish': 'da-DK',
+    // 'Norwegian': 'nb-NO',
+    // 'English (South Africa)': 'en-ZA',
+     'Spanish (US)': 'es-US',
 
   };
 
@@ -157,8 +157,15 @@ class AgentProvider with ChangeNotifier {
     _speechToTextEnabled = value;
     notifyListeners();
   }
+  // List<String> getSelectedLanguageCodes() {
+  //   return _selectedLanguages.map((lang) => languageCodes[lang]!).toList();
+  // }
   List<String> getSelectedLanguageCodes() {
-    return _selectedLanguages.map((lang) => languageCodes[lang]!).toList();
+    return _selectedLanguages
+        .map((lang) => languageCodes[lang])
+        .where((code) => code != null) // Filter out null values
+        .cast<String>() // Cast the resulting list to List<String>
+        .toList();
   }
 
   //
@@ -200,7 +207,8 @@ class AgentProvider with ChangeNotifier {
     _displayName = config.displayName ?? _displayName;
     _image = config.image ?? _image;
     _colors = config.colors ?? _colors;
-    _selectedLanguages = config.languages ?? _selectedLanguages;
+    _selectedLanguages = config.languages?.map((code) => languageCodes.entries.firstWhere((entry) => entry.value == code, orElse: () => MapEntry(code, code)).key).toList() ?? _selectedLanguages;
+  //  _selectedLanguages = config.languages ?? _selectedLanguages;
     _speechToTextEnabled = config.isSpeech2text ?? _speechToTextEnabled;
     notifyListeners();
   }

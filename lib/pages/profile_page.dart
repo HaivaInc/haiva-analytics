@@ -8,35 +8,47 @@ import '../providers/agent_provider.dart';
 import '../services/auth_service.dart';
 import 'onboard.dart';
 
-class ProfilePage extends StatelessWidget {
+class ProfilePage extends StatefulWidget {
   final String agentId;
   ProfilePage({Key? key, required this.agentId}) : super(key: key);
 
+  @override
+  _ProfilePageState createState() => _ProfilePageState();
+}
+
+class _ProfilePageState extends State<ProfilePage> {
+
   final AuthService authService = AuthService();
+  late Future<Agent> _agentFuture;
+  @override
+  void initState() {
+    super.initState();
+    _agentFuture = _loadAgentData();
+  }
+  Future<Agent> _loadAgentData() async {
+    final agentProvider = Provider.of<AgentProvider>(context, listen: false);
+    return await agentProvider.getAgentById(widget.agentId);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AgentProvider>(
-      builder: (context, agentProvider, child) {
-        return Scaffold(
-          body: SafeArea(
-            child: FutureBuilder<Agent>(
-              future: agentProvider.getAgentById(agentId),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Center(child: CupertinoActivityIndicator());
-                } else if (snapshot.hasError) {
-                  return Center(child: Text('Error: ${snapshot.error}'));
-                } else if (!snapshot.hasData) {
-                  return Center(child: Text('No agent data found'));
-                } else {
-                  return _buildProfileContent(context, snapshot.data!);
-                }
-              },
-            ),
-          ),
-        );
-      },
+    return Scaffold(
+      body: SafeArea(
+        child: FutureBuilder<Agent>(
+          future: _agentFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CupertinoActivityIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (!snapshot.hasData) {
+              return Center(child: Text('No agent data found'));
+            } else {
+              return _buildProfileContent(context, snapshot.data!);
+            }
+          },
+        ),
+      ),
     );
   }
 
@@ -46,8 +58,6 @@ class ProfilePage extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          // SizedBox(height: 16),
-          // _buildAvatar(context, agent),
           SizedBox(height: 16),
           _buildAgentInfo(context, agent),
           SizedBox(height: 16),
@@ -60,23 +70,6 @@ class ProfilePage extends StatelessWidget {
   }
 
   // Widget _buildAvatar(BuildContext context, Agent agent) {
-  //   return CircleAvatar(
-  //     radius: 30,
-  //     backgroundColor: Color(0xFF19437D),
-  //     backgroundImage: agent.agentConfigs?.image != null
-  //         ? NetworkImage(agent.agentConfigs!.image!)
-  //         : null,
-  //     child: agent.agentConfigs?.image == null
-  //         ? Text(
-  //       agent.name?.toUpperCase().substring(0, 1) ?? '?',
-  //       style: CupertinoTheme.of(context).textTheme.navLargeTitleTextStyle.copyWith(
-  //         color: CupertinoColors.white,
-  //       ),
-  //     )
-  //         : null,
-  //   );
-  // }
-
   Widget _buildAgentInfo(BuildContext context, Agent agent) {
     return Column(
       children: [

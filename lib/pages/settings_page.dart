@@ -4,7 +4,10 @@ import 'package:haivanalytics/pages/configure_page.dart';
 import 'package:haivanalytics/pages/connection_page.dart';
 import 'package:haivanalytics/pages/talk_page.dart';
 import 'package:haivanalytics/theme/colortheme.dart';
+import 'package:provider/provider.dart';
 
+import '../models/agent.dart';
+import '../providers/agent_provider.dart';
 import 'deploy_info.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -17,14 +20,18 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   int _completedStep = 0;
+  late Future<Agent> _agentFuture;
 
   @override
   void initState() {
     super.initState();
-
+    _agentFuture = _loadAgentData();
   }
 
-
+  Future<Agent> _loadAgentData() async {
+    final agentProvider = Provider.of<AgentProvider>(context, listen: false);
+    return await agentProvider.getAgentById(widget.agentId);
+  }
 
   void _onCardTap(int step) async {
     Widget page;
@@ -65,54 +72,66 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // navigationBar: const CupertinoNavigationBar(
-      //   middle: Text('Settings'),
-      // ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.all(16.0),
-                children: [
-                  _buildCard(
-                    context,
-                    'Agent Configuration',
-                    'Collect details like color name and description of the agent.',
-                    //Colors.blue.shade100,
-                    ColorTheme.primary.withOpacity(0.6) ,
-                    0,
-                    CupertinoIcons.info,
-                  ),
-                  _buildCard(
-                    context,
-                    'Configure TALK/SPEECH',
-                    'Configure the language and communication settings, and adjust various linguistic parameters to ensure effective understanding and interaction.',
-                    ColorTheme.primary.withOpacity(0.7) ,
-                    1,
-                    CupertinoIcons.textformat_alt,
-                  ),
-                  _buildCard(
-                    context,
-                    'Fetching from database',
-                    'Uploading and organizing the data that will be used. Import various data sources to ensure all necessary information is available for accurate responses.',
-                    ColorTheme.primary.withOpacity(0.8) ,
-                    2,
-                    CupertinoIcons.cloud_download,
-                  ),
 
-                  _buildCard(
-                    context,
-                    'Deploy Information',
-                    'Set up the deployment environment, and launch the configuration to start interacting with users. Ensure everything is live and operational for real-world usage.',
-                    ColorTheme.primary.withOpacity(0.9) ,
-                    3,
-                    CupertinoIcons.device_phone_portrait,
+      body: SafeArea(
+
+        child: FutureBuilder<Agent>(
+          future: _agentFuture,
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return Center(child: CupertinoActivityIndicator());
+            } else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } else if (snapshot.hasData) {
+              final agent = snapshot.data!;
+              return Column(
+                children: [
+                  _buildAgentDetailsSection(agent),
+                  Expanded(
+                    child: ListView(
+                      padding: const EdgeInsets.all(16.0),
+                      children: [
+                        _buildCard(
+                          context,
+                          'Agent Configuration',
+                          'Collect details like color name and description of the agent.',
+                          ColorTheme.primary.withOpacity(0.6),
+                          0,
+                          CupertinoIcons.info,
+                        ),
+                        _buildCard(
+                          context,
+                          'Configure TALK/SPEECH',
+                          'Configure the language and communication settings, and adjust various linguistic parameters to ensure effective understanding and interaction.',
+                          ColorTheme.primary.withOpacity(0.7),
+                          1,
+                          CupertinoIcons.textformat_alt,
+                        ),
+                        _buildCard(
+                          context,
+                          'Fetching from database',
+                          'Uploading and organizing the data that will be used. Import various data sources to ensure all necessary information is available for accurate responses.',
+                          ColorTheme.primary.withOpacity(0.8),
+                          2,
+                          CupertinoIcons.cloud_download,
+                        ),
+                        _buildCard(
+                          context,
+                          'Deploy Information',
+                          'Set up the deployment environment, and launch the configuration to start interacting with users. Ensure everything is live and operational for real-world usage.',
+                          ColorTheme.primary.withOpacity(0.9),
+                          3,
+                          CupertinoIcons.device_phone_portrait,
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-              ),
-            ),
-          ],
+              );
+            } else {
+              return Center(child: Text('No data available'));
+            }
+          },
         ),
       ),
     );
@@ -169,6 +188,50 @@ class _SettingsPageState extends State<SettingsPage> {
             ),
           ],
         ),
+      ),
+    );
+  }
+  Widget _buildAgentDetailsSection(Agent agent) {
+    return Container(
+      padding: const EdgeInsets.all(16.0),
+      color: ColorTheme.primary.withOpacity(0.1),
+      child: Row(
+        children: [
+          CircleAvatar(
+            backgroundColor: ColorTheme.primary,
+            radius: 30,
+            child: ClipOval(
+              child: agent.agentConfigs?.image != null
+                  ? Image.network(
+                agent.agentConfigs!.image!,
+                width: 60,
+                height: 60,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                 //   Icon(Icons.error, color: Colors.white, size: 30),
+                Image.asset('assets/haiva.png', width: 60, height: 60, fit: BoxFit.contain),
+              )
+                  : Icon(Icons.person, color: Colors.white, size: 30),
+            ),
+          ),
+          SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  agent.name ?? 'Unnamed Agent',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Agent ID: ${widget.agentId}',
+                  style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

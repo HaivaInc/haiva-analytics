@@ -231,11 +231,13 @@ class _ConfigCreatePageState extends State<ConfigCreatePage> {
     final screenWidth = MediaQuery.of(context).size.width;
     final isSmallScreen = screenWidth < 600;
 
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: Text('Create Agent'),
+    return Scaffold(
+      appBar: AppBar(
+
+        backgroundColor:Color(0xFF19437D),
+        title: Text('Create Agent'),
       ),
-      child: SafeArea(
+      body: SafeArea(
         child: SingleChildScrollView(
           padding: EdgeInsets.all(isSmallScreen ? 8.0 : 16.0),
           child: Column(

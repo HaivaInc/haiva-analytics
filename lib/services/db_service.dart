@@ -64,8 +64,10 @@ class DbService {
   }
 
   Future<http.Response> getDatabaseTables(String databaseName) async {
+    // Remove spaces from the databaseName
+    final DatabaseNameFix = databaseName.replaceAll(' ', '');
 
-    final url = 'https://apiservices.haiva.ai/v1/admin/$orgId/$workspaceId/$databaseName/get-database-tables';
+    final url = 'https://apiservices.haiva.ai/v1/admin/$orgId/$workspaceId/$DatabaseNameFix/get-database-tables';
 
     print("url = $url");
 

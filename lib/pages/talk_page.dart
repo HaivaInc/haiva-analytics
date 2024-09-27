@@ -29,12 +29,13 @@ class _TalkPageState extends State<TalkPage> {
     super.initState();
     _loadAgentConfig();
   }
-
   void _loadAgentConfig() async {
     final agentProvider = Provider.of<AgentProvider>(context, listen: false);
     try {
       final agent = await agentProvider.getAgentById(widget.agentId);
+      print('Loaded agent config: ${agent.agentConfigs?.languages}');
       agentProvider.updateAgentConfig(agent.agentConfigs!);
+      setState(() {}); // Force rebuild after config update
     } catch (e) {
       print('Error loading agent config: $e');
     }

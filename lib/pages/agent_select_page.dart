@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:haivanalytics/pages/nav_page.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../providers/agent_provider.dart';
 import '../constants.dart';
 import '../models/agent.dart';
@@ -25,6 +26,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   final TextEditingController _searchController = TextEditingController();
   final AuthService authService = AuthService();
   bool _initialLoading = true;
+  Future<void>? _defaultAgent ;
   bool _error = false;
   String? _selectedAgentId;
   bool _loadingMore = false;
@@ -44,6 +46,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
     try {
       await _fetchWorkspaces();
       await _fetchAgents();
+      await _loadDefaultAgent();
       setState(() {
         _initialLoading = false;
       });
@@ -55,7 +58,6 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       });
     }
   }
-
   Future<void> _handleLogout(BuildContext context) async {
     bool logoutSuccessful = await authService.logout();
 
@@ -339,6 +341,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
 
         return SliverList(
           delegate: SliverChildBuilderDelegate(
+
                 (context, index) {
               if (index >= filteredAgents.length) {
                 return _loadingMore
@@ -347,6 +350,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
               }
 
               return Padding(
+
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: _buildDismissibleAgentTile(filteredAgents[index]),
               );
@@ -705,6 +709,23 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
     );
   }
 
+  Future<void> _loadDefaultAgent() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? defaultAgentId = prefs.getString('defaultAgentId');
+
+    if (defaultAgentId == null) {
+      List<Agent> agents = Provider.of<AgentProvider>(context, listen: false).agents;
+      if (agents.isNotEmpty) {
+        _defaultAgent = _setDefaultAgent(agents[0].id!);
+
+        await _setDefaultAgent(agents[0].id!);
+      }
+    } else {
+      setState(() {
+        Constants.agentId = defaultAgentId;
+      });
+    }
+  }
   void _showAlreadyDefaultMessage(Agent agent) {
     showCupertinoDialog(
       context: context,
@@ -725,7 +746,15 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       },
     );
   }
+  Future<void> _setDefaultAgent(String agentId) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString('defaultAgentId', agentId);
+    setState(() {
+      Constants.agentId = agentId;
+    });
+  }
   void _showDefaultSetConfirmation(Agent agent) {
+    _setDefaultAgent(agent.id!);
     showCupertinoDialog(
       context: context,
       builder: (BuildContext context) {
@@ -733,7 +762,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
           title: Text('Default Agent Set'),
           content: Text('Your default agent is now set to ${agent.name}.'),
           actions: <Widget>[
-            CupertinoDialogAction(
+            CupertinoActionSheetAction(
               isDefaultAction: true,
               child: Text('OK'),
               onPressed: () {
@@ -743,50 +772,6 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildSetAsDefaultButton(Agent agent) {
-    return CupertinoButton(
-      padding: EdgeInsets.zero,
-      child: Text(
-        'Set as Default',
-        style: TextStyle(
-          fontFamily: GoogleFonts.raleway().fontFamily,
-          color: CupertinoColors.activeBlue,
-          fontWeight: FontWeight.bold,
-          fontSize: 14,
-        ),
-      ),
-      onPressed: () {
-        // Implement set as default functionality
-        print('Set ${agent.name} as default');
-
-        setState(() {
-          Constants.agentId = _selectedAgentId;
-        });
-
-        // Show Cupertino Alert Dialog
-        showCupertinoDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return CupertinoAlertDialog(
-              title: Text('Default Agent Set'),
-              content: Text('Your default agent is now set to ${agent.name}.'),
-              actions: <Widget>[
-                CupertinoDialogAction(
-                  isDefaultAction: true,
-                  child: Text('OK'),
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                ),
-              ],
-            );
-          },
-        );
-      },
-
     );
   }
 }

@@ -13,38 +13,23 @@ class BubbleWidget extends StatefulWidget {
 }
 
 class _BubbleWidgetState extends State<BubbleWidget> with SingleTickerProviderStateMixin{
-  late AnimationController _controller;
-  late Animation<Offset> _offsetAnimation;
+
 
   @override
   void initState() {
     super.initState();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: Duration(milliseconds: 300),
-    );
 
-    _offsetAnimation = Tween<Offset>(
-      begin: Offset(-0.5, 0.0), // Starts off-screen to the left
-      end: Offset(0.0, 0.0), // Ends at the final position
-    ).animate(CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeInOut, // You can customize this curve if needed
-    ));
 
-    _controller.forward();
   }
   @override
   void dispose() {
-    _controller.dispose();
+
     super.dispose();
   }
   @override
   Widget build(BuildContext context) {
-    return SlideTransition(
-      position: _offsetAnimation,
-      child: Container(
+ return Container(
         decoration: BoxDecoration(
           color: ColorTheme.primary.withOpacity(0.1),
           border: Border.all(
@@ -69,7 +54,6 @@ class _BubbleWidgetState extends State<BubbleWidget> with SingleTickerProviderSt
             ],
           ),
         ),
-      ),
-    );
+      );
   }
 }

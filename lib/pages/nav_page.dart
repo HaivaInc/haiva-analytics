@@ -5,6 +5,9 @@ import 'package:haivanalytics/pages/haiva-flow/flow_chat_haiva.dart';
 import 'package:haivanalytics/pages/profile_page.dart';
 import 'package:haivanalytics/pages/settings_page.dart';
 import 'package:haivanalytics/theme/colortheme.dart';
+import 'package:provider/provider.dart';
+import '../models/agent.dart';
+import '../providers/agent_provider.dart';
 import 'chat_page.dart';
 
 class MainNavigationPage extends StatefulWidget {
@@ -23,6 +26,7 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
 
   @override
   void initState() {
+
     print("agentid from main nav page = ${widget.agentId}");
     super.initState();
     _pageController = PageController(initialPage: 0);

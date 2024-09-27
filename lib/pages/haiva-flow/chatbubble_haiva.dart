@@ -12,7 +12,7 @@ import 'customcomponenthaiva.dart';
 
 class ChatBubbleHaiva extends StatefulWidget {
   final ResponseMessage message;
-
+  final bool stopSpeaking;
   final Function(String, bool) onSendMessage;
   final AgentConfigs agentDetails;
   final Function(Map<String, dynamic>) onFormSubmit;
@@ -22,7 +22,7 @@ class ChatBubbleHaiva extends StatefulWidget {
         required this.onSendMessage,
         required this.onFormSubmit,
         required this.agentDetails,
-        this.locale})
+        this.locale, required this.stopSpeaking})
       : super(key: key);
 
   @override
@@ -164,7 +164,7 @@ bool noComponent = false;
                           //   print('Form data received in onFormSubmit: $formData'); // Debugging line
                              widget.onFormSubmit(formData);
                            },
-                           locale: locale,
+                           locale: locale,  stopSpeaking: widget.stopSpeaking,
                          )
 
                      ],

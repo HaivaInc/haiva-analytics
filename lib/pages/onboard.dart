@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:haivanalytics/pages/haiva-flow/flow_chat_haiva.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../constants.dart';
 import '../services/auth_service.dart';
@@ -12,6 +13,12 @@ import 'agent_select_page.dart';
 
 class OnboardingPage extends StatelessWidget {
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+
+
+  Future<String?> _getDefaultAgentId() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    return prefs.getString('defaultAgentId');
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -101,29 +108,53 @@ class OnboardingPage extends StatelessWidget {
             ),
             SizedBox(height: 30),
            ElevatedButton(
+style: ButtonStyle(
 
+  backgroundColor: WidgetStateProperty.all(Colors.white),
+),
               child: Text(
                 'Get Started',
                 style: GoogleFonts.raleway(
                   fontSize: 16,
-                  color: Colors.white,
+                  color: Color(0xFF19437D),
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              onPressed: () async {
-                await authService.login();
-                if (await authService.isAuthenticated()) {
-                  Navigator.push(
-                    context,
-                MaterialPageRoute(
-                      builder: (context) => Constants.agentId == null
-                          ? AgentSelectionPage()
-                          : HaivaChatScreen(agentId: Constants.agentId!),
-                    ),
-                  );
-
-                }
-              },
+             onPressed: () async {
+               await authService.login();
+               if (await authService.isAuthenticated()) {
+                 String? defaultAgentId = await _getDefaultAgentId();
+                 if (defaultAgentId != null) {
+                   Navigator.push(
+                     context,
+                     MaterialPageRoute(
+                       builder: (context) => HaivaChatScreen(agentId: defaultAgentId),
+                     ),
+                   );
+                 } else {
+                   Navigator.push(
+                     context,
+                     MaterialPageRoute(
+                       builder: (context) => AgentSelectionPage(),
+                     ),
+                   );
+                 }
+               }
+             },
+              // onPressed: () async {
+              //   await authService.login();
+              //   if (await authService.isAuthenticated()) {
+              //     Navigator.push(
+              //       context,
+              //   MaterialPageRoute(
+              //         builder: (context) => Constants.agentId == null
+              //             ? AgentSelectionPage()
+              //             : HaivaChatScreen(agentId: Constants.agentId!),
+              //       ),
+              //     );
+              //
+              //   }
+              // },
               // padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
               // borderRadius: BorderRadius.circular(25),
             ),
@@ -133,4 +164,5 @@ class OnboardingPage extends StatelessWidget {
       ),
     );
   }
+
 }

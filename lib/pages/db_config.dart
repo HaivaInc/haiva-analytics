@@ -20,7 +20,7 @@ class _DatabaseFormState extends State<DatabaseForm> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _databaseNameController = TextEditingController();
-
+String ? _errorMessage;
   String _databaseType = 'mysql';
   bool _isLoading = false;
   bool _passwordVisible = false;
@@ -99,59 +99,83 @@ class _DatabaseFormState extends State<DatabaseForm> {
       }
     }
   }
-
   Widget _buildTextField({
     required TextEditingController controller,
     required String placeholder,
     required IconData icon,
     bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String)? validator,  // Add a validator function
   }) {
-    return Container(
-      margin: EdgeInsets.only(bottom: 16),
-      decoration: BoxDecoration(
-        color: CupertinoColors.systemGrey6,
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: CupertinoTextField(
-        controller: controller,
-        placeholder: placeholder,
-        placeholderStyle: TextStyle(color: CupertinoColors.label),
-        prefix: Padding(
-          padding: EdgeInsets.only(left: 10),
-          child: Icon(icon, color: Color(0xFF19437D)),
-        ),
-        suffix: isPassword
-            ? Padding(
-          padding: EdgeInsets.only(right: 10),
-          child: GestureDetector(
-            onTap: () {
-              setState(() {
-                _passwordVisible = !_passwordVisible;
-              });
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Container(
+          margin: EdgeInsets.only(bottom: 8),
+          decoration: BoxDecoration(
+            color: CupertinoColors.systemGrey6,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: CupertinoTextField(
+            controller: controller,
+            placeholder: placeholder,
+            placeholderStyle: TextStyle(color: CupertinoColors.placeholderText),
+            prefix: Padding(
+              padding: EdgeInsets.only(left: 10),
+              child: Icon(icon, color: Color(0xFF19437D)),
+            ),
+            suffix: isPassword
+                ? Padding(
+              padding: EdgeInsets.only(right: 10),
+              child: GestureDetector(
+                onTap: () {
+                  setState(() {
+                    _passwordVisible = !_passwordVisible;
+                  });
+                },
+                child: Icon(
+                  _passwordVisible ? CupertinoIcons.eye_slash_fill : CupertinoIcons.eye_fill,
+                  color: CupertinoColors.systemGrey,
+                ),
+              ),
+            )
+                : null,
+            padding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+            ),
+            obscureText: isPassword && !_passwordVisible,
+            keyboardType: keyboardType,
+            onChanged: (value) {
+              // Call the validator function if provided
+              if (validator != null) {
+                final errorMessage = validator(value);
+                setState(() {
+                  _errorMessage = errorMessage;
+                });
+              }
             },
-            child: Icon(
-              _passwordVisible ? CupertinoIcons.eye_slash_fill : CupertinoIcons.eye_fill,
-              color: CupertinoColors.systemGrey,
+          ),
+        ),
+        if (_errorMessage != null)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              _errorMessage!,
+              style: TextStyle(color: Colors.red),
             ),
           ),
-        )
-            : null,
-        padding: EdgeInsets.symmetric(vertical: 12, horizontal: 10),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(8),
-        ),
-        obscureText: isPassword && !_passwordVisible,
-        keyboardType: keyboardType,
-      ),
+      ],
     );
   }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: CupertinoNavigationBar(
-        middle: Text('Database Connection'),
+      appBar: AppBar(
+        backgroundColor: ColorTheme.primary,
+        title: Text('Database Connection'),
       ),
       body: SafeArea(
         child: _isLoading
@@ -186,12 +210,19 @@ class _DatabaseFormState extends State<DatabaseForm> {
                       SizedBox(height: 16),
                       _buildTextField(
                         controller: _databaseNameController,
-                        placeholder: 'Database Name',
+                        placeholder: 'Connection Name',
                         icon: CupertinoIcons.doc_text,
+                        validator: (value) {
+                          if (value.contains(' ')) {
+                            return '${context} cannot contain spaces.';
+                          }
+                          return null;  // Return null if valid
+                        },
                       ),
+
                       _buildTextField(
                         controller: _dbNameController,
-                        placeholder: 'DB Name',
+                        placeholder: 'Database Name',
                         icon: CupertinoIcons.text_badge_checkmark,
                       ),
                       _buildTextField(
