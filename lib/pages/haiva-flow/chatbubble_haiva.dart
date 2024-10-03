@@ -33,6 +33,7 @@ class ChatBubbleHaiva extends StatefulWidget {
 class _ChatBubbleFlowState extends State<ChatBubbleHaiva> with SingleTickerProviderStateMixin{
    late String locale;
   bool isHovered = false;
+   bool _speakerOff = false;
 bool noComponent = false;
    late AnimationController _controller;
    late Animation<double> _scaleAnimation;
@@ -156,15 +157,17 @@ bool noComponent = false;
                          widget.message.customWidget!,
                        if (widget.message.payload != null)
                          CustomComponentHaiva(
+                           stopSpeaking: widget.stopSpeaking,
                            payload: widget.message.payload!,
                            onButtonPressed: (String message, bool isClicked) {
-                                  widget.onSendMessage(message, isClicked);
+                             widget.onSendMessage(message, isClicked);
                            },
                            onFormSubmit: (formData) {
-                          //   print('Form data received in onFormSubmit: $formData'); // Debugging line
+                             //   print('Form data received in onFormSubmit: $formData'); // Debugging line
                              widget.onFormSubmit(formData);
                            },
-                           locale: locale,  stopSpeaking: widget.stopSpeaking,
+                           locale: locale,
+                           speakerOff: _speakerOff,
                          )
 
                      ],

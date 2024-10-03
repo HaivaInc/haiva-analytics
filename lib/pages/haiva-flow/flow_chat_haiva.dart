@@ -16,6 +16,7 @@ import '../../statemanagement/chatstate.dart';
 import '../../theme/colortheme.dart';
 import '../../widget/bubble.dart';
 import '../agent_select_page.dart';
+import '../settings_page.dart';
 import 'chatbubble_haiva.dart';
 
 
@@ -27,14 +28,14 @@ class HaivaChatScreen extends StatefulWidget {
 }
 
 class HaivaChatScreenState extends State<HaivaChatScreen> {
+
+
   late ConfettiController _confettiController;
   final SpeechToText _speechToText = SpeechToText();
   bool _speechEnabled = false;
   bool _speechListening = false;
-  bool stopSpeaking = false;
   String _lastWords = '';
   bool _isclicked = false;
-  bool  isSpeaking =true ;
   final TextEditingController _controller = TextEditingController();
   late List<ResponseMessage> _messages = [];
   final ScrollController _scrollController = ScrollController();// Set to true by default since this screen is for agent messages
@@ -50,6 +51,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
     LocaleName('kn-IN', 'Kannada (India)'),
     LocaleName('zh-CN', 'Chinese (Simplified)'),
     LocaleName('ja-JP', 'Japanese (Japan)'),
+    // Other languages...
   ];
   String _currentLocaleId = 'en-US';
 
@@ -58,6 +60,10 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
   WelcomeMessageData welcomemessagedata = WelcomeMessageData(type: 'null', data: {});
   List _sampleQuestions =[];
   bool _isWelcomeVisible = true;
+  bool _showAvatar = false;
+  bool _isFirstBotMessage = false;
+  bool stopSpeaking = false;
+  bool  isSpeaking =true ;
   bool _isOnline = false;
   String? _agentName;
   String? _sessionId;
@@ -70,13 +76,6 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
     "is analyzing",
     "is processing"
   ];
-  void checkPermissions() async {
-    var status = await Permission.microphone.status;
-    if (!status.isGranted) {
-      await Permission.microphone.request();
-    }
-  }
-
   @override
   void initState() {
     super.initState();
@@ -101,10 +100,11 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
       // }
     });
   }
-
   void _initSpeech() async {
     _speechEnabled = await _speechToText.initialize();
     _localeNames = await _speechToText.locales();
+    //print("Locales initialized: $_localeNames");
+    //   print(_currentLocaleId) ;// Set default language
     setState(() {});
   }
   void _startLoading() {
@@ -115,27 +115,31 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
     });
   }
   void _startListening() async {
-
+    _controller.clear();
     await _speechToText.listen(
       onResult: _onSpeechResult,
-      listenFor: Duration(seconds: 3000),
-      pauseFor: Duration(seconds: 300),
+      listenFor: Duration(seconds: 300),
+      pauseFor: Duration(seconds: 30),
+      partialResults: true,
       localeId: _currentLocaleId,
 
+      cancelOnError: true,
 
     );
     setState(() {
+
       _speechListening = true;
     });
-  }
 
-  void _stopListening() async {
-    await _speechToText.stop();
+  }
+  void _stopListening()  {
+    _speechToText.stop();
     setState(() {
       _speechListening = false;
+ //     _controller.clear();
+
     });
   }
-
   void _onSpeechResult(SpeechRecognitionResult result) {
     setState(() {
       _lastWords = result.recognizedWords;
@@ -149,7 +153,6 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
       _stopListening();
     }
   }
-
   @override
   void dispose() {
     _controller.dispose();
@@ -158,14 +161,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
     _scrollController.dispose();
     super.dispose();
   }
-
-
-  void sendMessage(String text,
-      {bool displayMessage = true,
-        bool action = false,
-        String? session_id = null,
-        String? language,
-        dynamic payload}) async {
+  void sendMessage(String text, {bool displayMessage = true, bool action = false, String? session_id = null, String? language, dynamic payload}) async {
 
     _confettiController.play(); // Start confetti animation
 
@@ -296,10 +292,6 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
 
 
   }
-
-
-
-
   void _scrollToBottom() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scrollController.hasClients) {
@@ -311,9 +303,6 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
       }
     });
   }
-
-
-
   void _refreshChat() {
     setState(() {
 
@@ -322,36 +311,6 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
       sendMessage('hi', displayMessage: false,session_id: _sessionId=null,language:_currentLocaleId); // Reset the question clicked state
     });
   }
-  void _showRefreshAlertDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: ColorTheme.primary,
-          title: Text('Refresh Chat', style: TextStyle(color: ColorTheme.secondary)),
-          content: Text('Do you want to refresh the chat?', style: TextStyle(color: ColorTheme.secondary,fontSize: 16)),
-          actions: <Widget>[
-            OutlinedButton(
-              child: Text('No', style: TextStyle(color: ColorTheme.secondary,fontSize: 14)),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-            OutlinedButton(
-              child: Text('Yes', style: TextStyle(color: ColorTheme.secondary,fontSize: 14)),
-              onPressed: () {
-                // Implement refresh logic here
-                _refreshChat();
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-// Mapping of locale identifiers to language names
   final Map<String, String> languageNames = {
     'en-US': 'English (United States)',
     'es-ES': 'Spanish (Spain)',
@@ -366,8 +325,6 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
     'ja-JP': 'Japanese (Japan)',
     // Add more mappings as needed
   };
-
-// Mapping of language codes to their respective names
   final Map<String, String> languageCodeToName = {
     'en': 'English',
     'es': 'Spanish',
@@ -382,20 +339,14 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
     'ja': 'Japanese',
     // Add more mappings as needed
   };
-
-
-
-// Extract the language code from a locale identifier
   String _extractLanguageCode(String localeIdentifier) {
     return localeIdentifier.split('-')[0]; // Assumes locale format is language-region
   }
-
   List<PopupMenuEntry<String>> _buildLanguageMenuItems(List<String> localeIdentifiers) {
     return localeIdentifiers.map((localeIdentifier) {
       final languageCode = _extractLanguageCode(localeIdentifier);
       final name = languageCodeToName[languageCode] ?? localeIdentifier; // Fallback to locale identifier if not found
       return PopupMenuItem<String>(
-        enabled: true,
         value: localeIdentifier,
         child: Text(
           name,
@@ -488,64 +439,69 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                 ),
                 child: GestureDetector(
                   onTap: () {
-                    showDialog(
-                      context: context,
-                      builder: (context) {
-                        return AlertDialog(
-                          backgroundColor: ColorTheme.primary,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.0),
-                          ),
-                          titlePadding: EdgeInsets.all(16.0),
-                          contentPadding: EdgeInsets.all(16.0),
-                          title: Text(
-                            'Description',
-                            style: GoogleFonts.questrial(
-                              color: ColorTheme.secondary,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
+                    if(_agentDetails.description != null) {
+                      showDialog(
+                        context: context,
+                        builder: (context) {
+
+                          return AlertDialog(
+                            backgroundColor: ColorTheme.primary,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16.0),
                             ),
-                          ),
-                          content: SingleChildScrollView(
-                            child: Text(
-                              _agentDetails.description ??
-                                  'Ask any questions you have about the products store, I\'ll provide all the information you need?',
+                            titlePadding: EdgeInsets.all(16.0),
+                            contentPadding: EdgeInsets.all(16.0),
+                            title: Text(
+                              'Description',
                               style: GoogleFonts.questrial(
+                                color: ColorTheme.secondary,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
+                            ),
+                            content: SingleChildScrollView(
+                              child: Text(
+                                _agentDetails.description! ,style: GoogleFonts.questrial(
                                 color: ColorTheme.secondary,
                                 fontSize: 16,
                                 fontWeight: FontWeight.normal,
                               ),
-                            ),
-                          ),
-                          actions: [
-                            ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                foregroundColor: ColorTheme.primary, backgroundColor: ColorTheme.secondary,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(8.0),
-                                ),
-                                padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
-                              ),
-                              onPressed: () {
-                                Navigator.of(context).pop();
-                              },
-                              child: Text(
-                                'Got It',
-                                style: GoogleFonts.questrial(
-                                  color: ColorTheme.primary,
-                                  fontWeight: FontWeight.bold,
-                                ),
                               ),
                             ),
-                          ],
-                        );
-                      },
-                    );
+                            actions: [
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  foregroundColor: ColorTheme.primary, backgroundColor: ColorTheme.secondary,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8.0),
+                                  ),
+                                  padding: EdgeInsets.symmetric(vertical: 12.0, horizontal: 24.0),
+                                ),
+                                onPressed: () {
+                                  Navigator.of(context).pop();
+                                },
+                                child: Text(
+                                  'Got It',
+                                  style: GoogleFonts.questrial(
+                                    color: ColorTheme.primary,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                              ),
+
+                            ],
+                          );
+
+
+                        },
+                      );
+                    }
+
                   },
                   child: ClipOval(
                     child: _agentDetails == null || _agentDetails.image == null
                         ? Image.asset(
-                      "assets/haiva.png",
+                      "assets/haiva-icon.png",
                       height: 30,
                       width: 30,
                       fit: BoxFit.cover,
@@ -557,7 +513,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) {
                         return Image.asset(
-                          "assets/haiva.png",
+                          "assets/haiva-icon.png",
                           height: 30,
                           width: 30,
                           fit: BoxFit.cover,
@@ -626,10 +582,11 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
               });
             },
           ),
+
+
           PopupMenuButton<String>(
             popUpAnimationStyle: AnimationStyle.noAnimation,
             tooltip: 'Show languages',
-            initialValue: _currentLocaleId,
             shadowColor: ColorTheme.primary.withOpacity(1),
             color: ColorTheme.primary,
             icon: Icon(Icons.translate, color: ColorTheme.secondary),
@@ -644,15 +601,14 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
             },
             itemBuilder: (BuildContext context) {
               // Assuming _agentDetails.languages is a list of locale identifiers
-              final List<String> localeIdentifiers = _agentDetails.languages!;
+              final List<String> localeIdentifiers = _agentDetails.languages ?? ["en-US", "ta-IN"];
               return _buildLanguageMenuItems(localeIdentifiers);
             },
           )
 
-
           ,IconButton(
             onPressed: () {
-              _showRefreshAlertDialog();
+              _refreshChat();
               //  _changeTheme();
             },
             icon: Icon(
@@ -662,23 +618,73 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
           ),
           IconButton(
             onPressed: () {
-              Navigator.push(
-                context,
-                CupertinoPageRoute(
-                    builder: (context) =>
-                        AgentSelectionPage()
-
+              showCupertinoModalPopup(
+                context: context,
+                builder: (BuildContext context) => CupertinoActionSheet(
+                  title: Text('Choose an action'),
+                  message: Text('Do you want to switch agents or configure settings?'),
+                  actions: <CupertinoActionSheetAction>[
+                    CupertinoActionSheetAction(
+                      child: Text('Switch Agents'),
+                      onPressed: () {
+                        Navigator.pop(context); // Close the action sheet
+                        showCupertinoDialog(
+                          context: context,
+                          builder: (BuildContext context) => CupertinoAlertDialog(
+                            title: Text('Confirm Agent Switch'),
+                            content: Text('Are you sure? You cannot view the existing conversation after switching.'),
+                            actions: <CupertinoDialogAction>[
+                              CupertinoDialogAction(
+                                child: Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.pop(context); // Close the dialog
+                                },
+                              ),
+                              CupertinoDialogAction(
+                                child: Text('Switch'),
+                                isDestructiveAction: true,
+                                onPressed: () {
+                                  Navigator.pop(context); // Close the dialog
+                                  Navigator.push(
+                                    context,
+                                    CupertinoPageRoute(
+                                      builder: (context) => AgentSelectionPage(),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    CupertinoActionSheetAction(
+                      child: Text('Settings'),
+                      onPressed: () {
+                        Navigator.pop(context); // Close the action sheet
+                        Navigator.push(
+                          context,
+                          CupertinoPageRoute(
+                            builder: (context) => SettingsPage(agentId: widget.agentId),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                  cancelButton: CupertinoActionSheetAction(
+                    child: Text('Cancel'),
+                    onPressed: () {
+                      Navigator.pop(context); // Close the action sheet
+                    },
+                  ),
                 ),
               );
-              //  _changeTheme();
             },
             icon: Icon(
               CupertinoIcons.settings,
               color: ColorTheme.secondary,
             ),
           ),
-
-
         ],
       ),
       body: Stack(
@@ -707,7 +713,8 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                               sendMessage('the form data is', displayMessage: false, action: _isclicked, payload: formData);
                             },
                             agentDetails: _agentDetails,
-                            locale: _currentLocaleId, stopSpeaking: !isSpeaking,
+                            locale: _currentLocaleId,
+                            stopSpeaking: !isSpeaking,
                           )
 
 
@@ -726,14 +733,14 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                     children: [
                       ClipOval(
                         child: _agentDetails == null || _agentDetails.image == null
-                            ? Image.asset("assets/haiva.png", height: 50, width: 50)
+                            ? Image.asset("assets/haiva-icon.png", height: 50, width: 50)
                             : Image.network(
                           _agentDetails.image!,
                           height: 50,
                           width: 50,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
-                            return Image.asset("assets/haiva.png", height: 50, width: 50);
+                            return Image.asset("assets/haiva-icon.png", height: 50, width: 50);
                           },
                         ),
                       ),
@@ -840,6 +847,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                                     child: Padding(
                                       padding: const EdgeInsets.all(2.0),
                                       child: TextField(
+
                                         enabled: _isDeployed,
                                         textInputAction: TextInputAction.send,
                                         cursorColor: ColorTheme.accent,
@@ -847,12 +855,8 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                                         keyboardType: TextInputType.multiline,
                                         controller: _controller,
                                         decoration: InputDecoration(
-                                          hintText: _isDeployed
-                                              ? 'Enter a message ...'
-                                              : 'Agent is not deployed. Please deploy to enter message ...',
-                                          border: InputBorder.none, // Ensures no underline is shown
-                                          enabledBorder: InputBorder.none, // Removes underline when not focused
-                                          focusedBorder: InputBorder.none, // Removes underline when focused
+                                          hintText: _isDeployed?'Enter a message ...':'Agent is not deployed. Please deploy to enter message ...',
+                                          border: InputBorder.none,
                                           contentPadding: EdgeInsets.symmetric(vertical: 16.0),
                                         ),
                                         style: GoogleFonts.questrial(
@@ -861,12 +865,12 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                                           fontWeight: FontWeight.bold,
                                         ),
                                         onSubmitted: (text) => _isloading ? null : sendMessage(text),
-                                      )
-                                      ,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ),
+
                               if (_speechEnabled && _agentDetails.isSpeech2Text == true)
                                 Padding(
                                   padding: const EdgeInsets.fromLTRB(0,6,6,6),
@@ -922,6 +926,7 @@ class HaivaChatScreenState extends State<HaivaChatScreen> {
                                   ),
                                 ),
                               ),
+
                             ],
                           ),
                         ),

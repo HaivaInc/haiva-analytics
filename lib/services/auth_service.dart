@@ -9,6 +9,7 @@ class AuthService {
   final WebviewCookieManager _cookieManager = WebviewCookieManager();
   final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
 
+
   final String _clientId = '3h3dhjghsivy3x3hegju3gijcj3ocr784grcHszP4KtyGnnZdARBXs';
   final String _domain = 'https://haiva.authent.works';
   final String _issuer = 'https://haiva.authent.works/auth';

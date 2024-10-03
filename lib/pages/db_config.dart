@@ -105,7 +105,7 @@ String ? _errorMessage;
     required IconData icon,
     bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
-    String? Function(String)? validator,  // Add a validator function
+    bool isConnectorName = false,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,17 +147,19 @@ String ? _errorMessage;
             obscureText: isPassword && !_passwordVisible,
             keyboardType: keyboardType,
             onChanged: (value) {
-              // Call the validator function if provided
-              if (validator != null) {
-                final errorMessage = validator(value);
+              if (isConnectorName) {
                 setState(() {
-                  _errorMessage = errorMessage;
+                  if (value.contains(' ')) {
+                    _errorMessage = 'Connection name cannot contain spaces.';
+                  } else {
+                    _errorMessage = null;
+                  }
                 });
               }
             },
           ),
         ),
-        if (_errorMessage != null)
+        if (isConnectorName && _errorMessage != null)
           Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
@@ -168,7 +170,6 @@ String ? _errorMessage;
       ],
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -212,12 +213,7 @@ String ? _errorMessage;
                         controller: _databaseNameController,
                         placeholder: 'Connection Name',
                         icon: CupertinoIcons.doc_text,
-                        validator: (value) {
-                          if (value.contains(' ')) {
-                            return '${context} cannot contain spaces.';
-                          }
-                          return null;  // Return null if valid
-                        },
+                        isConnectorName: true,
                       ),
 
                       _buildTextField(

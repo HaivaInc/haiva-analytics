@@ -30,7 +30,7 @@ class CustomComponentHaiva extends StatefulWidget {
     required this.onFormSubmit,
     required  this.stopSpeaking,
     Key? key,
-    this.locale,
+    this.locale, required bool speakerOff,
   }) : super(key: key);
 
   @override
@@ -173,16 +173,12 @@ class _CustomComponentHaivaState extends State<CustomComponentHaiva> {
   }
   Future<void> _speak(String text) async {
     if (_isSpeaking) {
-
-      {
-        await _audioPlayer.stop();
-      }
-
-    } else {
+      await _audioPlayer.stop(); // Stop any ongoing speech
       setState(() {
-        _isLoading = true;
+        _isSpeaking = false;
       });
-
+    } else {
+      // Clean up markdown text
       String cleanText = md.markdownToHtml(text)
           .replaceAll(RegExp(r'<[^>]*>'), '')
           .replaceAll('&amp;', '&')
@@ -201,106 +197,215 @@ class _CustomComponentHaivaState extends State<CustomComponentHaiva> {
       try {
         Uint8List audioBytes;
         if (_cachedAudio.containsKey(cleanText)) {
+          // Use cached audio if available
           audioBytes = _cachedAudio[cleanText]!;
         } else {
+          // Fetch new audio and cache it
           audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US');
           _cachedAudio[cleanText] = audioBytes;
         }
 
+        await _audioPlayer.play(BytesSource(audioBytes)); // Use BytesSource
+        setState(() {
+          _isSpeaking = true;
+        });
 
-       {
-          await _audioPlayer.play(BytesSource(audioBytes));
-          _audioPlayer.onPlayerComplete.listen((_) {
-            setState(() {
-              _isSpeaking = false;
-            });
+        _audioPlayer.onPlayerComplete.listen((_) {
+          setState(() {
+            _isSpeaking = false;
           });
-        }
+        });
       } catch (e) {
         print('Error playing audio: $e');
         setState(() {
-          _isLoading = false;
           _isSpeaking = false;
         });
       }
-    } }
-  //
-  // Future<void> _stopSpeaking() async {
-  //   if (kIsWeb) {
-  //     js.context.callMethod('eval', ['if (typeof howl !== "undefined") { howl.stop(); }']);
-  //   } else {
-  //     await _audioPlayer.stop();
+    }
+  }
+  // Future<void> _speak(String text) async {
+  //   if (_isSpeaking) {
+  //     await _audioPlayer.stop(); // Stop any ongoing speech
+  //     setState(() {
+  //       _isSpeaking = false;
+  //     });
   //   }
-  //   setState(() {
-  //     _isSpeaking = false; // Update the speaking state
-  //   });
-  // }
+  //   else {
+  //     // Clean up markdown text
+  //     String cleanText = md.markdownToHtml(text)
+  //         .replaceAll(RegExp(r'<[^>]*>'), '')
+  //         .replaceAll('&amp;', '&')
+  //         .replaceAll('&lt;', '<')
+  //         .replaceAll('&gt;', '>')
+  //         .replaceAll('&quot;', '"')
+  //         .replaceAll('&apos;', "'")
+  //         .replaceAll('|', ' ')
+  //         .replaceAll('-', ' ')
+  //         .replaceAll('.', ' ')
+  //         .replaceAll('\n', ' ')
+  //         .toLowerCase()
+  //         .replaceAll(RegExp(r'\s{2,}'), ' ')
+  //         .trim();
   //
-  // Future<void> _startSpeaking(String text) async {
-  //   setState(() {
-  //     _isLoading = true; // Indicate loading
-  //   });
+  //     try {
+  //       final audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US');
+  //       await _audioPlayer.play(BytesSource(audioBytes)); // Use BytesSource
+  //       setState(() {
+  //         _isSpeaking = true;
+  //       });
   //
-  //   String cleanText = md.markdownToHtml(text)
-  //       .replaceAll(RegExp(r'<[^>]*>'), '')
-  //       .replaceAll('&amp;', '&')
-  //       .replaceAll('&lt;', '<')
-  //       .replaceAll('&gt;', '>')
-  //       .replaceAll('&quot;', '"')
-  //       .replaceAll('&apos;', "'")
-  //       .replaceAll('|', ' ')
-  //       .replaceAll('-', ' ')
-  //       .replaceAll('.', ' ')
-  //       .replaceAll('\n', ' ')
-  //       .toLowerCase()
-  //       .replaceAll(RegExp(r'\s{2,}'), ' ')
-  //       .trim();
-  //
-  //   try {
-  //     Uint8List audioBytes;
-  //     if (_cachedAudio.containsKey(cleanText)) {
-  //       audioBytes = _cachedAudio[cleanText]!;
-  //     } else {
-  //       audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US');
-  //       _cachedAudio[cleanText] = audioBytes;
+  //       _audioPlayer.onPlayerComplete.listen((_) {
+  //         setState(() {
+  //           _isSpeaking = false;
+  //         });
+  //       });
+  //     } catch (e) {
+  //       print('Error playing audio: $e');
+  //       setState(() {
+  //         _isSpeaking = false;
+  //       });
   //     }
+  //   }
+  // }
+
+  // Future<void> _speak(String text) async {
+  //   if (_isSpeaking) {
   //
   //     if (kIsWeb) {
-  //       final base64Audio = base64Encode(audioBytes);
-  //       final audioUrl = 'data:audio/mp3;base64,$base64Audio';
+  //       js.context.callMethod('eval', ['if (typeof howl !== "undefined") { howl.stop(); }']);
   //
-  //       js.context.callMethod('eval', [ '''
-  //     if (typeof howl !== "undefined") {
-  //       howl.stop();
-  //       howl.unload();
-  //     }
-  //
-  //     var howl = new Howl({
-  //       src: ['$audioUrl'],
-  //       format: ['mp3'],
-  //       onend: function() {
-  //         window.flutter_inappwebview.callHandler('onAudioComplete');
-  //       }
-  //     });
-  //     howl.play();
-  //     ''' ]);
-  //       _isSpeaking = true;
   //     } else {
-  //       await _audioPlayer.play(BytesSource(audioBytes));
+  //       await _audioPlayer.stop();
   //     }
   //
+  //
+  //
+  //   } else {
   //     setState(() {
-  //       _isSpeaking = true; // Update speaking state
-  //       _isLoading = false; // Hide loading
+  //       _isLoading = true;
   //     });
-  //   } catch (e) {
-  //     print('Error playing audio: $e');
-  //     setState(() {
-  //       _isLoading = false;
-  //       _isSpeaking = false; // Update speaking state
-  //     });
-  //   }
-  // }
+  //
+  //     String cleanText = md.markdownToHtml(text)
+  //         .replaceAll(RegExp(r'<[^>]*>'), '')
+  //         .replaceAll('&amp;', '&')
+  //         .replaceAll('&lt;', '<')
+  //         .replaceAll('&gt;', '>')
+  //         .replaceAll('&quot;', '"')
+  //         .replaceAll('&apos;', "'")
+  //         .replaceAll('|', ' ')
+  //         .replaceAll('-', ' ')
+  //         .replaceAll('.', ' ')
+  //         .replaceAll('\n', ' ')
+  //         .toLowerCase()
+  //         .replaceAll(RegExp(r'\s{2,}'), ' ')
+  //         .trim();
+  //
+  //     try {
+  //       Uint8List audioBytes;
+  //       if (_cachedAudio.containsKey(cleanText)) {
+  //         audioBytes = _cachedAudio[cleanText]!;
+  //       } else {
+  //         audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US');
+  //         _cachedAudio[cleanText] = audioBytes;
+  //       }
+  //
+  //       if (kIsWeb) {
+  //         final base64Audio = base64Encode(audioBytes);
+  //         final audioUrl = 'data:audio/mp3;base64,$base64Audio';
+  //
+  //         js.context.callMethod('eval', [ '''
+  //       if (typeof howl !== "undefined") {
+  //         howl.stop();
+  //         howl.unload();
+  //       }
+  //
+  //       var howl = new Howl({
+  //         src: ['$audioUrl'],
+  //         format: ['mp3'],
+  //         onend: function() {
+  //           window.flutter_inappwebview.callHandler('onAudioComplete');
+  //         }
+  //       });
+  //       howl.play();
+  //     '''
+  //         ]);
+  //
+  //         setState(() {
+  //           _isSpeaking = true;
+  //           _isLoading = false;
+  //         });
+  //       }
+  //       else {
+  //         await _audioPlayer.play(BytesSource(audioBytes));
+  //         _audioPlayer.onPlayerComplete.listen((_) {
+  //           setState(() {
+  //             _isSpeaking = false;
+  //           });
+  //         });
+  //       }
+  //     } catch (e) {
+  //       print('Error playing audio: $e');
+  //       setState(() {
+  //         _isLoading = false;
+  //         _isSpeaking = false;
+  //       });
+  //     }
+  //   } }
+
+  Future<void> _stopSpeaking() async {
+    {
+      await _audioPlayer.stop();
+    }
+    setState(() {
+      _isSpeaking = false; // Update the speaking state
+    });
+  }
+
+  Future<void> _startSpeaking(String text) async {
+    setState(() {
+      _isLoading = true; // Indicate loading
+    });
+
+    String cleanText = md.markdownToHtml(text)
+        .replaceAll(RegExp(r'<[^>]*>'), '')
+        .replaceAll('&amp;', '&')
+        .replaceAll('&lt;', '<')
+        .replaceAll('&gt;', '>')
+        .replaceAll('&quot;', '"')
+        .replaceAll('&apos;', "'")
+        .replaceAll('|', ' ')
+        .replaceAll('-', ' ')
+        .replaceAll('.', ' ')
+        .replaceAll('\n', ' ')
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s{2,}'), ' ')
+        .trim();
+
+    try {
+      Uint8List audioBytes;
+      if (_cachedAudio.containsKey(cleanText)) {
+        audioBytes = _cachedAudio[cleanText]!;
+      } else {
+        audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US');
+        _cachedAudio[cleanText] = audioBytes;
+      }
+
+   {
+        await _audioPlayer.play(BytesSource(audioBytes));
+      }
+
+      setState(() {
+        _isSpeaking = true; // Update speaking state
+        _isLoading = false; // Hide loading
+      });
+    } catch (e) {
+      print('Error playing audio: $e');
+      setState(() {
+        _isLoading = false;
+        _isSpeaking = false; // Update speaking state
+      });
+    }
+  }
 
 
   @override
@@ -351,7 +456,9 @@ class _CustomComponentHaivaState extends State<CustomComponentHaiva> {
                                 _speak(data['message']);
 
                               },
-                                icon: _isSpeaking ?Icon(Icons.volume_up_rounded): Icon(Icons.volume_off)  ,
+                                icon:
+                                _isSpeaking ?Icon(Icons.pause_circle): Icon(Icons.volume_up)  ,
+
                                 iconSize: 15,
                               ),
                             ),
