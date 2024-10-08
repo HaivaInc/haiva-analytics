@@ -22,6 +22,7 @@ class Agent {
   });
 
   factory Agent.fromJson(Map<String, dynamic> json) {
+    print('888888${json['agent_configs']}');
     return Agent(
       id: json['agent_id'] ?? '', // Provide default value if null
       name: json['name'] ?? '',
@@ -69,6 +70,7 @@ class AgentConfigs {
   final bool? isSpeech2text; // Speech-to-text field
   final List<String>? languages; // Languages field
   final Map<String, dynamic>? colors; // Colors field
+  final String? voice_code;
 
   AgentConfigs({
        this.displayName,
@@ -79,6 +81,7 @@ class AgentConfigs {
       this.isSpeech2text,
     this.languages,
    this.colors,
+    this.voice_code,
   });
 
   factory AgentConfigs.fromJson(Map<String, dynamic> json) {
@@ -99,6 +102,7 @@ class AgentConfigs {
       colors: json['colors'] != null
           ? Map<String, dynamic>.from(json['colors'])
           : {}, // Default to empty map if not present
+      voice_code: json['voice_code'] ?? '',
     );
   }
 
@@ -111,6 +115,7 @@ class AgentConfigs {
       'is_speech2text': isSpeech2text,
       'languages': languages,
       'colors': colors,
+      'voice_code': voice_code,
     };
     if (fileConfig != null) {
       data['file_config'] = fileConfig!.toJson();
@@ -127,6 +132,7 @@ class AgentConfigs {
     bool? isSpeech2text,
     List<String>? languages,
     Map<String, dynamic>? colors, // Correct type here
+    String? voice_code,
   }) {
     return AgentConfigs(
       displayName: displayName ?? this.displayName,
@@ -137,6 +143,7 @@ class AgentConfigs {
       isSpeech2text: isSpeech2text ?? this.isSpeech2text,
       languages: languages ?? this.languages,
       colors: colors ?? this.colors,
+      voice_code: voice_code ?? this.voice_code,
     );
   }
 
