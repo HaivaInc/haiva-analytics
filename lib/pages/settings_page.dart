@@ -9,6 +9,7 @@ import 'package:provider/provider.dart';
 import '../models/agent.dart';
 import '../providers/agent_provider.dart';
 import 'deploy_info.dart';
+import 'haiva-flow/flow_chat_haiva.dart';
 
 class SettingsPage extends StatefulWidget {
   final String agentId;
@@ -72,7 +73,11 @@ class _SettingsPageState extends State<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-
+      appBar: AppBar(
+        backgroundColor: Color(0xFF19437D),
+        centerTitle: true,
+        title: Text('Agent Settings'),
+      ),
       body: SafeArea(
 
         child: FutureBuilder<Agent>(
@@ -228,10 +233,33 @@ class _SettingsPageState extends State<SettingsPage> {
                   'Agent ID: ${widget.agentId}',
                   style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                 ),
+                _buildRedirectButton(context),
               ],
             ),
           ),
         ],
+      ),
+    );
+  }
+  Widget _buildRedirectButton(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: () {
+        // Replace with the page you want to navigate to
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => HaivaChatScreen(agentId: widget.agentId)),
+        );
+      },
+      // icon: Icon(CupertinoIcons.arrow_right),
+      label: Text("Go to Chat",style: TextStyle(color: Colors.white),),
+      style: ElevatedButton.styleFrom(
+
+        padding: const EdgeInsets.symmetric(vertical: 0.0, horizontal: 10.0),
+        backgroundColor: Color(0xFF19437D),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8.0),
+        ),
+        minimumSize: Size(80, 30),
       ),
     );
   }

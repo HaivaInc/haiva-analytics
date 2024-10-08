@@ -51,23 +51,19 @@ class TextToSpeechService {
     final language = 'en-US';
     final text = "Hello! from HAIVA. I'm a AI powered Multilingual Voice agent.";
 
-    // Create the request body
     final requestBody = {
       "language": language,
       "text": text,
       "voice": voiceLabel
     };
 
-
-    // try {
-      // Make the HTTP POST request
-      final response = await http.post(
-        Uri.parse(url),
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: jsonEncode(requestBody),
-      );
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: jsonEncode(requestBody),
+    );
     if (response.statusCode == 200) {
       print('Voice Response${response.bodyBytes}');
       return response.bodyBytes;
