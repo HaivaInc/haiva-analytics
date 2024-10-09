@@ -62,6 +62,8 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
     bool logoutSuccessful = await authService.logout();
 
     if (logoutSuccessful) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
       showCupertinoDialog(
         context: context,
         builder: (BuildContext context) => CupertinoAlertDialog(
@@ -76,13 +78,14 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   CupertinoPageRoute(builder: (context) => OnboardingPage()),
                       (route) => false,
                 );
-
+                //  exit(0);
               },
               child: Text('OK'),
             ),
           ],
         ),
       );
+
     } else {
       showCupertinoDialog(
         context: context,
@@ -101,7 +104,6 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       );
     }
   }
-
   void _showLogoutDialog() {
     showCupertinoDialog(
       context: context,
@@ -118,7 +120,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
           ),
           CupertinoDialogAction(
             onPressed: () {
-             // Navigator.of(context).pop();
+              //  Navigator.of(context).pop();
               _handleLogout(context);
             },
             child: Text('Yes'),
@@ -712,7 +714,6 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   Future<void> _loadDefaultAgent() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? defaultAgentId = prefs.getString('defaultAgentId');
-
     if (defaultAgentId == null) {
       List<Agent> agents = Provider.of<AgentProvider>(context, listen: false).agents;
       if (agents.isNotEmpty) {

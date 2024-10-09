@@ -8,7 +8,6 @@ import 'package:haivanalytics/pages/haiva-flow/flow_chat_haiva.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
-import '../models/agent.dart';
 import '../providers/agent_provider.dart';
 import '../providers/workspace_provider.dart';
 import '../services/auth_service.dart';
@@ -21,41 +20,12 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
-  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
-  Future<void>? _defaultAgent ;
   bool _isLoading = false;
+  final FlutterSecureStorage _secureStorage = FlutterSecureStorage();
+
   Future<String?> _getDefaultAgentId() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     return prefs.getString('defaultAgentId');
-  }
-  Future<void> _setDefaultAgent(String agentId) async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    await prefs.setString('defaultAgentId', agentId);
-    setState(() {
-      print('34567890${agentId}');
-      Constants.agentId = agentId;
-    });
-  }
-  Future<void> _loadDefaultAgent() async {
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? defaultAgentId = prefs.getString('defaultAgentId');
-
-    if (defaultAgentId == null) {
-      print("-------IN");
-      List<Agent> agents = Provider.of<AgentProvider>(context, listen: false).agents;
-      print(agents);
-      if (agents.isNotEmpty) {
-        _defaultAgent = _setDefaultAgent(agents[0].id!);
-
-        await _setDefaultAgent(agents[0].id!);
-      }
-    } else {
-      setState(() {
-        print("_defaultAgent---${defaultAgentId }");
-        Constants.agentId = defaultAgentId;
-      });
-    }
-    print("_defaultAgent : ${  Constants.agentId }");
   }
   Future<void> _fetchWorkspaces() async {
     try {
@@ -88,7 +58,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
       throw e;
     }
   }
-
   Future<void> _fetchAgents() async {
     try {
       if (mounted) {
@@ -99,15 +68,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
       print('Error fetching agents: $e');
     }
   }
-
-  @override
-  void initState() {
-    super.initState();
-  }
   @override
   Widget build(BuildContext context) {
     final authService = Provider.of<AuthService>(context);
     final agentProvider = Provider.of<AgentProvider>(context, listen: false);
+
 
     return Scaffold(
 
@@ -194,12 +159,12 @@ class _OnboardingPageState extends State<OnboardingPage> {
             SizedBox(height: 30),
             ElevatedButton(
               style: ButtonStyle(
+
                 backgroundColor: WidgetStateProperty.all(Colors.white),
               ),
               child: _isLoading
-                  ? CupertinoActivityIndicator(
-              )
-                  : Text(
+                  ? CupertinoActivityIndicator() :
+              Text(
                 'Get Started',
                 style: GoogleFonts.raleway(
                   fontSize: 16,
@@ -208,15 +173,23 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
               ),
               onPressed: () async {
+                setState(() {
+                  _isLoading = true;
+                });
                 await authService.login();
                 if (await authService.isAuthenticated()) {
-                // await _setDefaultAgent(Constants.agentId!);
-             //     String? defaultAgentId = await _getDefaultAgentId();
-                  if (Constants.defaultAgentId != null) {
+                  await _fetchWorkspaces();
+                  await _fetchAgents();
+                  String? defaultAgentId = await _getDefaultAgentId();
+
+//                   print('----${defaultAgentId}');
+// print("-=-=-=-${agentProvider.agents[0].name}");
+                  if (defaultAgentId != null && (agentProvider.name.length > 0 && agentProvider.agents.any((agent) => agent.id == defaultAgentId ))) {
+
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => HaivaChatScreen(agentId: Constants.defaultAgentId!),
+                        builder: (context) => HaivaChatScreen(agentId: defaultAgentId),
                       ),
                     );
                   } else {
@@ -228,7 +201,27 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     );
                   }
                 }
+                setState(() {
+                  _isLoading = false;
+                });
               },
+
+              // onPressed: () async {
+              //   await authService.login();
+              //   if (await authService.isAuthenticated()) {
+              //     Navigator.push(
+              //       context,
+              //   MaterialPageRoute(
+              //         builder: (context) => Constants.agentId == null
+              //             ? AgentSelectionPage()
+              //             : HaivaChatScreen(agentId: Constants.agentId!),
+              //       ),
+              //     );
+              //
+              //   }
+              // },
+              // padding: EdgeInsets.symmetric(horizontal: 80, vertical: 15),
+              // borderRadius: BorderRadius.circular(25),
             ),
             SizedBox(height: 30),
           ],
@@ -237,4 +230,3 @@ class _OnboardingPageState extends State<OnboardingPage> {
     );
   }
 }
-

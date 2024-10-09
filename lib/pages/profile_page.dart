@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants.dart';
 import '../models/agent.dart';
 import '../providers/agent_provider.dart';
@@ -161,20 +162,49 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Future<void> _handleLogout(BuildContext context) async {
-    try {
-      bool success = await authService.logout();
-      if (success) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          CupertinoPageRoute(builder: (context) => OnboardingPage()),
-              (route) => false,
-        );
-      } else {
-        _showErrorDialog(context, 'Logout failed. Please try again.');
-      }
-    } catch (e) {
-      print('Error during logout: $e');
-      _showErrorDialog(context, 'Logout failed. Please try again.');
+    bool logoutSuccessful = await authService.logout();
+
+    if (logoutSuccessful) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          title: Text('Logout Successful'),
+          content: Text('You have been logged out of the app.'),
+          actions: <CupertinoDialogAction>[
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  CupertinoPageRoute(builder: (context) => OnboardingPage()),
+                      (route) => false,
+                );
+                //  exit(0);
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
+
+    } else {
+      showCupertinoDialog(
+        context: context,
+        builder: (BuildContext context) => CupertinoAlertDialog(
+          title: Text('Logout Error'),
+          content: Text('There was an unexpected error during logout. Please try again or restart the app.'),
+          actions: <CupertinoDialogAction>[
+            CupertinoDialogAction(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        ),
+      );
     }
   }
 
