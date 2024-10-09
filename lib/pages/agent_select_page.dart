@@ -15,9 +15,15 @@ import '../services/auth_service.dart';
 import '../services/workspace_id_service.dart';
 import 'config_create_page.dart';
 import 'configure_page.dart';
+import 'haiva-flow/flow_chat_haiva.dart';
 import 'onboard.dart';
 
+
+
 class AgentSelectionPage extends StatefulWidget {
+
+  AgentSelectionPage({Key? key}) : super(key: key);
+
   @override
   _AgentSelectionPageState createState() => _AgentSelectionPageState();
 }
@@ -32,19 +38,38 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   bool _loadingMore = false;
   final ScrollController _scrollController = ScrollController();
 
+  Timer? _timer;
   @override
   void initState() {
     super.initState();
     _refreshAgents();
-    Timer.periodic(Duration(seconds: 10), (timer) async {
-      await _fetchAgents();
+    _timer = Timer.periodic(Duration(seconds: 10), (timer) async {
+      if (mounted) {
+        await _fetchAgents();
+      }
     });
     _initializeData();
   }
 
+  @override
+  void dispose() {
+    _timer?.cancel(); // Cancel the timer when disposing the widget
+    _scrollController.dispose(); // Dispose of any controllers you are using
+    _searchController.dispose();
+    super.dispose();
+  }
+  Future<void> _fetchAgents() async {
+    try {
+      if (mounted) {
+        print("-----${Constants.workspaceId}");
+        await Provider.of<AgentProvider>(context, listen: false).fetchAgents(Constants.workspaceId!);
+      }
+    } catch (e) {
+      print('Error fetching agents: $e');
+    }
+  }
   Future<void> _initializeData() async {
     try {
-      await _fetchWorkspaces();
       await _fetchAgents();
       await _loadDefaultAgent();
       setState(() {
@@ -129,37 +154,20 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       ),
     );
   }
-
-  Future<void> _fetchWorkspaces() async {
-    try {
-      final workspaceService = WorkspaceService();
-      final workspaceIds = await workspaceService.getWorkspaces();
-      Provider.of<WorkspaceProvider>(context, listen: false).setWorkspaces(workspaceIds);
-      Constants.workspaceId = workspaceIds[0];
-      print("Constants.workspaceId: ${Constants.workspaceId}");
-    } catch (e) {
-      print('Error fetching workspaces: $e');
-      throw e;
-    }
-  }
-
-  Future<void> _fetchAgents() async {
-    try {
-      await Provider.of<AgentProvider>(context, listen: false).fetchAgents(Constants.workspaceId!);
-    } catch (e) {
-      print('Error fetching agents: $e');
-      throw e;
-    }
-  }
-
+  // Future<void> _fetchAgents() async {
+  //   try {
+  //     await Provider.of<AgentProvider>(context, listen: false).fetchAgents(Constants.workspaceId!,Constants.connectorName!);
+  //   } catch (e) {
+  //     print('Error fetching agents: $e');
+  //     throw e;
+  //   }
+  // }
   Future<void> _refreshAgents() async {
     if (_initialLoading) {
-      return; // Just exit the function without doing anything if it's loading
+      return;
     }
     await _fetchAgents(); // Otherwise, fetch the agents
   }
-
-
   Future<void> _deleteAgent(Agent agent) async {
     try {
       await Provider.of<AgentProvider>(context, listen: false).deleteAgent(agent.id??'');
@@ -183,6 +191,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
             padding: EdgeInsets.zero, // Remove default padding from the button
             onPressed: () {
               _showLogoutDialog();
+              //  _handleLogout(context);
             },
             child: Icon(
               CupertinoIcons.power,
@@ -193,14 +202,14 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       ),
 
       body: SafeArea(
-       // child: _buildContent(),
-        child:Column(
+        child: Column(
           children: [
             _buildSearchBar(),
             Expanded(child: _buildContent()),
           ],
-        )
+        ),
       ),
+
     );
   }
 
@@ -210,11 +219,11 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
     }
     if (_error) {
       return Center(child: Text('create new agent by clicking on the \n + create agent button ',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontWeight: FontWeight.bold,
-        color: Color(0xFF19437D),
-      ),));
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+          color: Color(0xFF19437D),
+        ),));
     }
     return CustomScrollView(
       controller: _scrollController,
@@ -336,14 +345,20 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
             : agentProvider.searchAgents(_searchController.text);
 
         if (filteredAgents.isEmpty) {
-          return SliverToBoxAdapter(
-            child: Center(child: Text('No agents found.')),
-          );
+
+          // WidgetsBinding.instance.addPostFrameCallback((_) {
+          //   Navigator.pushReplacement(
+          //     context,
+          //     CupertinoPageRoute(
+          //       builder: (context) => ConfigCreatePage(),
+          //     ),
+          //   );
+          // });
+          return SliverToBoxAdapter(child: Container()); // Return an empty container while navigating
         }
 
         return SliverList(
           delegate: SliverChildBuilderDelegate(
-
                 (context, index) {
               if (index >= filteredAgents.length) {
                 return _loadingMore
@@ -352,7 +367,6 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
               }
 
               return Padding(
-
                 padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                 child: _buildDismissibleAgentTile(filteredAgents[index]),
               );
@@ -363,6 +377,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       },
     );
   }
+
 
   // Widget _buildDismissibleAgentTile(Agent agent) {
   //   return Dismissible(
@@ -577,66 +592,78 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
 
     return GestureDetector(
       onTap: () {
-        Navigator.push(
-          context,
-          CupertinoPageRoute(
-            builder: (context) => MainNavigationPage(agentId: agent.id!),
-          ),
-        );
+        // Navigator.push(
+        //   context,
+        //   CupertinoPageRoute(
+        //     builder: (context) => MainNavigationPage(agentId: agent.id!),
+        //   ),
+        // );
       },
-      child: Container(
-        decoration: BoxDecoration(
-          color: CupertinoColors.systemGrey6,
-          borderRadius: BorderRadius.circular(12),
-          border: isDefault
-              ? Border.all(color: Color(0xFF19437D), width: 2)
-              : null,
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(12),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildAgentAvatar(agent),
-              SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            CupertinoPageRoute(
+              builder: (context) => HaivaChatScreen(agentId: agent.id!),
+            ),
+          );
+        },
+        child: Container(
+
+          decoration: BoxDecoration(
+            color: CupertinoColors.systemGrey6,
+            borderRadius: BorderRadius.circular(12),
+            border: isDefault
+                ? Border.all(color: Color(0xFF19437D), width: 2)
+                : null,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildAgentAvatar(agent),
+                SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        agent.name ?? 'Unnamed Agent',
+                        style: TextStyle(
+                            fontFamily: GoogleFonts.raleway().fontFamily,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 16
+                        ),
+                      ),
+                      SizedBox(height: 4),
+                      Text(
+                        agent.description ?? 'No description',
+                        style: TextStyle(
+                            fontFamily: GoogleFonts.raleway().fontFamily,
+                            fontSize: 14,
+                            color: CupertinoColors.systemGrey
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 12),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
-                    Text(
-                      agent.name ?? 'Unnamed Agent',
-                      style: TextStyle(
-                          fontFamily: GoogleFonts.raleway().fontFamily,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16
-                      ),
-                    ),
-                    SizedBox(height: 4),
-                    Text(
-                      agent.description ?? 'No description',
-                      style: TextStyle(
-                          fontFamily: GoogleFonts.raleway().fontFamily,
-                          fontSize: 14,
-                          color: CupertinoColors.systemGrey
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    _buildDeploymentStatus(agent),
+                    SizedBox(height: 8),
+                    _buildMoreOptionsButton(agent, isDefault),
                   ],
                 ),
-              ),
-              SizedBox(width: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _buildDeploymentStatus(agent),
-                  SizedBox(height: 8),
-                  _buildMoreOptionsButton(agent, isDefault),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
+
         ),
       ),
     );
@@ -658,6 +685,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                     if (!isDefault) {
                       setState(() {
                         Constants.agentId = agent.id;
+                        Navigator.push(context, MaterialPageRoute(builder: (context) => HaivaChatScreen(agentId: agent.id!)));
                       });
                       _showDefaultSetConfirmation(agent);
                     } else {
@@ -714,6 +742,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   Future<void> _loadDefaultAgent() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? defaultAgentId = prefs.getString('defaultAgentId');
+
     if (defaultAgentId == null) {
       List<Agent> agents = Provider.of<AgentProvider>(context, listen: false).agents;
       if (agents.isNotEmpty) {
@@ -726,26 +755,11 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
         Constants.agentId = defaultAgentId;
       });
     }
+    print("_defaultAgent : $_defaultAgent");
   }
   void _showAlreadyDefaultMessage(Agent agent) {
-    showCupertinoDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return CupertinoAlertDialog(
-          title: Text('Already Default'),
-          content: Text('${agent.name} is already set as the default agent.'),
-          actions: <Widget>[
-            CupertinoDialogAction(
-              isDefaultAction: true,
-              child: Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+    Navigator.push(context, MaterialPageRoute(builder: (context) => HaivaChatScreen(agentId: agent.id!)));
+
   }
   Future<void> _setDefaultAgent(String agentId) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -780,16 +794,14 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
 
 
 
-
 Widget _buildAgentAvatar(Agent agent) {
   return Container(
     width: 60,
     height: 60,
     decoration: BoxDecoration(
-    //  color: CupertinoColors.sys,
       borderRadius: BorderRadius.circular(8),
     ),
-    child: agent.agentConfigs?.image != null
+    child: agent.agentConfigs?.image != null && agent.agentConfigs!.image!.isNotEmpty
         ? Image.network(
       agent.agentConfigs!.image!,
       loadingBuilder: (context, child, progress) {
@@ -797,15 +809,16 @@ Widget _buildAgentAvatar(Agent agent) {
         return Center(child: CupertinoActivityIndicator());
       },
       errorBuilder: (context, error, stackTrace) {
+        print('Error loading image: $error');
         return Image.asset(
           'assets/haiva.png',
           fit: BoxFit.contain,
         );
       },
     )
-        : Icon(
-      CupertinoIcons.person_fill,
-      size: 40,
+        : Image.asset(
+      'assets/haiva.png',
+      fit: BoxFit.contain,
     ),
   );
 }
