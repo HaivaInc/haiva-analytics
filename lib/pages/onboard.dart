@@ -216,6 +216,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 await authService.login();
 
                 if (await authService.isAuthenticated()) {
+                  print("Constants.agentId: ${Constants.agentId}");
                   await _fetchWorkspaces();
                   await _fetchAgents();
                   await _loadDefaultAgent();
@@ -242,14 +243,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
                           builder: (context) => AgentSelectionPage(),
                         ),
                       );
-                    } else{
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => AgentSelectionPage(),
-                        ),
-                      );
                     }
+                  }else{
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => AgentSelectionPage(),
+                      ),
+                    );
                   }
                 }
 

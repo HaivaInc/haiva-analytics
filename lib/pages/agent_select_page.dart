@@ -103,7 +103,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   CupertinoPageRoute(builder: (context) => OnboardingPage()),
                       (route) => false,
                 );
-                //  exit(0);
+                 exit(0);
               },
               child: Text('OK'),
             ),
@@ -604,7 +604,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
           Navigator.push(
             context,
             CupertinoPageRoute(
-              builder: (context) => HaivaChatScreen(agentId: agent.id!),
+              builder: (context) => MainNavigationPage(agentId: agent.id!),
             ),
           );
         },
