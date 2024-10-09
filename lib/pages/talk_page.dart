@@ -57,9 +57,26 @@ class _TalkPageState extends State<TalkPage> {
   }
 
 
-  String _getVoiceLabel(dynamic voice) {
-    return "${voice['gender']} - ${voice['name']}";
+  Widget _getVoiceLabel(dynamic voice) {
+    String gender = voice['gender'];
+    String imagePath;
+    if (gender == 'Female') {
+      imagePath = 'assets/images/female.webp';
+    } else {
+      imagePath = 'assets/images/male.png';
+    }
+
+    String displayName = voice['name'].split('(')[0].trim();
+
+    return Row(
+      children: [
+        Image.asset(imagePath, height: 24, width: 24),
+        SizedBox(width: 8),
+        Text(displayName),
+      ],
+    );
   }
+
 
   void _loadAgentConfig() async {
     final agentProvider = Provider.of<AgentProvider>(context, listen: false);
@@ -241,7 +258,7 @@ class _TalkPageState extends State<TalkPage> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Expanded(child: Text(_getVoiceLabel(voice))),
+                              Expanded(child: _getVoiceLabel(voice)),
                               InkWell(
                                 onTap: () async {
                                     setState(() {
