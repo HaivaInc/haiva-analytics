@@ -7,6 +7,7 @@ class Agent {
   final String? type;
   final bool? isActive;
   final bool? isDeployed;
+  final bool? is_published;
   final AgentConfigs? agentConfigs;
 
 
@@ -17,6 +18,7 @@ class Agent {
      this.type,
      this.isActive,
      this.isDeployed,
+    this.is_published,
     required    this.agentConfigs,
 
   });
@@ -29,6 +31,7 @@ class Agent {
       type: json['type'] ?? '',
       isActive: json['is_active'] ,
       isDeployed: json['is_deployed'],
+        is_published: json['is_published'],
       agentConfigs: json['agent_configs'] != null
           ? AgentConfigs.fromJson(json['agent_configs'])
           : AgentConfigs(
@@ -45,6 +48,7 @@ class Agent {
     String? type,
     bool? isActive,
     bool? isDeployed,
+    bool? is_published,
     AgentConfigs? agentConfigs,
   }) {
     return Agent(
@@ -54,6 +58,7 @@ class Agent {
       type: type ?? this.type,
       isActive: isActive ?? this.isActive,
       isDeployed: isDeployed ?? this.isDeployed,
+      is_published: is_published ?? this.is_published,
       agentConfigs: agentConfigs ?? this.agentConfigs,
     );
   }

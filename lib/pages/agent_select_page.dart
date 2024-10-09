@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
@@ -11,6 +12,7 @@ import '../providers/agent_provider.dart';
 import '../constants.dart';
 import '../models/agent.dart';
 import '../providers/workspace_provider.dart';
+import '../services/agent_service.dart';
 import '../services/auth_service.dart';
 import '../services/workspace_id_service.dart';
 import 'config_create_page.dart';
@@ -58,6 +60,49 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       });
     }
   }
+  Future<void> _publishToHub(String? agentID) async {
+    try {
+      final agentService = AgentService();
+      final response = await agentService.publishAgent(agentID!);
+      Map<String, dynamic> res = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Published successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Publish failed')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+  Future<void> _featureAgent(String? agentID) async {
+    try {
+      final agentService = AgentService();
+      final response = await agentService.featureAgent(agentID!);
+      Map<String, dynamic> res = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Agent Featured Successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Feature Agent failed')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
   Future<void> _handleLogout(BuildContext context) async {
     bool logoutSuccessful = await authService.logout();
 
@@ -667,6 +712,33 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                 },
                 isDestructiveAction: false,
               ),
+              if (agent.isDeployed ?? false)
+                CupertinoActionSheetAction(
+                  child: Text('Publish to Agent Hub'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _publishToHub(agent.id); // Define this method to handle publishing
+                  },
+                  isDestructiveAction: false,
+                ),
+              if (agent.is_published ?? false)
+                CupertinoActionSheetAction(
+                  child: Text('Unpublish from Agent Hub'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    // _publishToHub(agent.id); // Define this method to handle publishing
+                  },
+                  isDestructiveAction: false,
+                ),
+              if (agent.is_published ?? false)
+                CupertinoActionSheetAction(
+                  child: Text('Mark it as Featured Agent'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _featureAgent(agent.id);
+                  },
+                  isDestructiveAction: false,
+                ),
               CupertinoActionSheetAction(
                 child: Text('Delete'),
                 onPressed: () {
