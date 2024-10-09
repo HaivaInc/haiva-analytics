@@ -194,7 +194,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             SizedBox(height: 30),
             ElevatedButton(
               style: ButtonStyle(
-                backgroundColor: MaterialStateProperty.all(Colors.white),
+                backgroundColor: WidgetStateProperty.all(Colors.white),
               ),
               child: _isLoading
                   ? CupertinoActivityIndicator(
@@ -208,34 +208,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
                 ),
               ),
               onPressed: () async {
-                setState(() {
-                  _isLoading = true;
-                });
-
                 await authService.login();
-
                 if (await authService.isAuthenticated()) {
-                  await _fetchWorkspaces();
-                  await _fetchAgents();
-                  await _loadDefaultAgent();
-                  if (Constants.agentId != null) {
-                    if (agentProvider.agents.length > 0 && agentProvider.agents.any((agent) => agent.id == Constants.agentId)) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HaivaChatScreen(agentId: Constants.agentId!),
-                        ),
-                      );
-                    } else if (agentProvider.agents.length > 0){
-                      await _setDefaultAgent(agentProvider.agents[0].id!);
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HaivaChatScreen(agentId: Constants.agentId!),
-                        ),
-                      );
-                    }
-                  }else {
+                // await _setDefaultAgent(Constants.agentId!);
+             //     String? defaultAgentId = await _getDefaultAgentId();
+                  if (Constants.defaultAgentId != null) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => HaivaChatScreen(agentId: Constants.defaultAgentId!),
+                      ),
+                    );
+                  } else {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
@@ -244,10 +228,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
                     );
                   }
                 }
-
-                setState(() {
-                  _isLoading = false;
-                });
               },
             ),
             SizedBox(height: 30),

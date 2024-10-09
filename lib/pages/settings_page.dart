@@ -74,7 +74,8 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Color(0xFF19437D),
+        automaticallyImplyLeading: false,
+        backgroundColor: ColorTheme.primary,
         centerTitle: true,
         title: Text('Agent Settings'),
       ),
@@ -100,7 +101,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           context,
                           'Agent Configuration',
                           'Collect details like color name and description of the agent.',
-                          ColorTheme.primary.withOpacity(0.6),
+                          Color(0xFF19437D).withOpacity(0.6),
                           0,
                           CupertinoIcons.info,
                         ),
@@ -108,7 +109,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           context,
                           'Configure TALK/SPEECH',
                           'Configure the language and communication settings, and adjust various linguistic parameters to ensure effective understanding and interaction.',
-                          ColorTheme.primary.withOpacity(0.7),
+                          Color(0xFF19437D).withOpacity(0.7),
                           1,
                           CupertinoIcons.textformat_alt,
                         ),
@@ -116,7 +117,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           context,
                           'Fetching from database',
                           'Uploading and organizing the data that will be used. Import various data sources to ensure all necessary information is available for accurate responses.',
-                          ColorTheme.primary.withOpacity(0.8),
+                          Color(0xFF19437D).withOpacity(0.8),
                           2,
                           CupertinoIcons.cloud_download,
                         ),
@@ -124,7 +125,7 @@ class _SettingsPageState extends State<SettingsPage> {
                           context,
                           'Deploy Information',
                           'Set up the deployment environment, and launch the configuration to start interacting with users. Ensure everything is live and operational for real-world usage.',
-                          ColorTheme.primary.withOpacity(0.9),
+                          Color(0xFF19437D).withOpacity(0.9),
                           3,
                           CupertinoIcons.device_phone_portrait,
                         ),
@@ -199,11 +200,11 @@ class _SettingsPageState extends State<SettingsPage> {
   Widget _buildAgentDetailsSection(Agent agent) {
     return Container(
       padding: const EdgeInsets.all(16.0),
-      color: ColorTheme.primary.withOpacity(0.1),
+      color: Color(0xFF19437D).withOpacity(0.1),
       child: Row(
         children: [
           CircleAvatar(
-            backgroundColor: ColorTheme.primary,
+            backgroundColor: Color(0xFF19437D),
             radius: 30,
             child: ClipOval(
               child: agent.agentConfigs?.image != null

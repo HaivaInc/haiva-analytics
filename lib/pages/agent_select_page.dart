@@ -76,7 +76,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   CupertinoPageRoute(builder: (context) => OnboardingPage()),
                       (route) => false,
                 );
-                exit(0);
+
               },
               child: Text('OK'),
             ),
@@ -118,7 +118,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
           ),
           CupertinoDialogAction(
             onPressed: () {
-              Navigator.of(context).pop();
+             // Navigator.of(context).pop();
               _handleLogout(context);
             },
             child: Text('Yes'),
@@ -571,7 +571,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   //   );
   // }
   Widget _buildAgentTile(Agent agent) {
-    bool isDefault = Constants.agentId == agent.id;
+    bool isDefault = Constants.defaultAgentId == agent.id;
 
     return GestureDetector(
       onTap: () {
@@ -655,7 +655,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   if (agent.isDeployed ?? false) {
                     if (!isDefault) {
                       setState(() {
-                        Constants.agentId = agent.id;
+                        Constants.defaultAgentId = agent.id;
                       });
                       _showDefaultSetConfirmation(agent);
                     } else {

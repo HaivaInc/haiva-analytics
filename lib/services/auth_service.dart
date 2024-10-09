@@ -60,6 +60,7 @@ class AuthService {
 
   Future<bool> logout() async {
     try {
+      Constants.agentId = null;
       final accessToken = await _secureStorage.read(key: 'access_token');
       if (accessToken != null) {
         final Uri logoutUri = Uri.parse(logoutUrl);
