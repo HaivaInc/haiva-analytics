@@ -571,7 +571,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   //   );
   // }
   Widget _buildAgentTile(Agent agent) {
-    bool isDefault = Constants.defaultAgentId == agent.id;
+    bool isDefault = Constants.agentId == agent.id;
 
     return GestureDetector(
       onTap: () {
@@ -655,7 +655,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   if (agent.isDeployed ?? false) {
                     if (!isDefault) {
                       setState(() {
-                        Constants.defaultAgentId = agent.id;
+                        Constants.agentId = agent.id;
                       });
                       _showDefaultSetConfirmation(agent);
                     } else {
