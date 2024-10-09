@@ -170,20 +170,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ),
             // Bottom text and button
             SizedBox(height: 20),
-            Text(
-              'Welcome to HAIVA for Zoho Inventory',
-              style: GoogleFonts.raleway(
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-                fontSize: 24,
-              ),
-              textAlign: TextAlign.center,
-            ),
+      Text(
+        'Welcome to HAIVA Analytics',
+        style: GoogleFonts.raleway(
+          fontWeight: FontWeight.bold,
+          color: Colors.white,
+          fontSize: 26,
+        ),),
             SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 30.0),
               child: Text(
-                'Real-time inventory insights, simplified sales tracking, and seamless access to all your inventory data—at your fingertips.',
+                'Real-time insights, simplified data visualization, and seamless access to all your databases—at your fingertips.',
                 style: GoogleFonts.raleway(
                   fontSize: 16,
                   color: Colors.white70,
