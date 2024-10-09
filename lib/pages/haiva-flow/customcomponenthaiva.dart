@@ -13,6 +13,7 @@ import '../../widget/bubble.dart';
 import '../../widget/button.dart';
 import '../../widget/chart.dart';
 import '../../widget/form.dart';
+import '../../widget/selecthtml.dart';
 import '../../widget/selectmarkdown.dart';
 import '../../widget/table.dart';
 
@@ -430,7 +431,7 @@ class _CustomComponentHaivaState extends State<CustomComponentHaiva> {
                         Padding(
                           padding: EdgeInsets.only(right: 30, bottom: 20),  // Add padding to make room for the button
                           child: BubbleWidget(
-                            widget: SelectableMarkdown(data: data['message']),
+                            widget: HtmlTextHandle(data: data['message']),
                           ),
                         ),
                         Positioned(

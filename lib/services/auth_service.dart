@@ -18,7 +18,7 @@ class AuthService {
 
   Future<bool> login() async {
     try {
-      // Clear any existing tokens before attempting a new login
+
       await _clearTokens();
 
       final AuthorizationTokenResponse? result = await _appAuth.authorizeAndExchangeCode(
