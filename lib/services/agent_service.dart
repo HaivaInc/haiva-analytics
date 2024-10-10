@@ -120,6 +120,7 @@ class AgentService {
   }
 
   Future<void> updateAgent(Agent agent) async {
+    print('7777777${agent.agentConfigs?.voice_code}');
     final url = Uri.parse('$baseUrl/saveHaivaAgentConfig?agent-id=${agent.id}');
 print("agentid = ${agent.id}");
     final response = await http.post(
@@ -139,7 +140,8 @@ print("agentid = ${agent.id}");
           'is_speech2text': agent.agentConfigs?.isSpeech2text,
           'languages': agent.agentConfigs?.languages,
           'colors': agent.agentConfigs?.colors ?? {},
-          'description': agent.agentConfigs?.description
+          'description': agent.agentConfigs?.description,
+          'voice_code': agent.agentConfigs?.voice_code,
         },
        // 'is_deployed': agent.isDeployed,
        // 'is_active': agent.isActive,

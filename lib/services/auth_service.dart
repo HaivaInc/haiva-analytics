@@ -18,7 +18,7 @@ class AuthService {
 
   Future<bool> login() async {
     try {
-      // Clear any existing tokens before attempting a new login
+
       await _clearTokens();
 
       final AuthorizationTokenResponse? result = await _appAuth.authorizeAndExchangeCode(
@@ -56,6 +56,7 @@ class AuthService {
     Constants.accessToken = null;
     Constants.workspaceId = null;
     Constants.orgId = null;
+    Constants.defaultAgentId = null;
   }
 
   Future<bool> logout() async {

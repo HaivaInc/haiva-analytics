@@ -32,6 +32,7 @@ class AgentConfigs {
   bool? isSpeech2Text;
   List<String>? languages;
   Map<String, dynamic>? colors;
+  String? voice_code;
 
   AgentConfigs({
     this.image,
@@ -41,6 +42,7 @@ class AgentConfigs {
     this.isSpeech2Text,
     this.languages,
     this.colors,
+    this.voice_code
 
   });
 
@@ -57,7 +59,7 @@ class AgentConfigs {
           ?.map((e) => e as String) // Convert list of strings
           .toList(),
       colors: (json['colors'] as Map<String, dynamic>?)?.map((key,value)=>MapEntry(key, value as String)),
-
+        voice_code: json['voice_code']
     );
   }
 
@@ -70,6 +72,7 @@ class AgentConfigs {
       'is_speech2text': isSpeech2Text,
       'languages': languages,
       'colors': colors,
+      'voice_code':voice_code
     };
   }
 }

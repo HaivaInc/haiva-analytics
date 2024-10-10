@@ -1,10 +1,12 @@
+import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:haivanalytics/theme/colortheme.dart';
 import 'package:provider/provider.dart';
 import '../models/agent.dart';
 import '../providers/agent_provider.dart';
 import '../widget/cupertino_filter_chip.dart';
+import 'haiva-flow/tts.dart';
+import 'dart:typed_data';
 
 class TalkPage extends StatefulWidget {
   final String agentId;
@@ -16,7 +18,13 @@ class TalkPage extends StatefulWidget {
 
 class _TalkPageState extends State<TalkPage> {
   final TextEditingController _searchController = TextEditingController();
+  final AudioPlayer _audioPlayer = AudioPlayer();
+  final ttsService = TextToSpeechService();
   String _searchQuery = '';
+  bool _isLoading = false;
+  List<dynamic> allVoices = [];
+  String? selectedVoice; // To store the selected voice code
+  String selectedGender = 'neutral'; // Default to 'neutral'
 
   @override
   void dispose() {
@@ -28,7 +36,48 @@ class _TalkPageState extends State<TalkPage> {
   void initState() {
     super.initState();
     _loadAgentConfig();
+    _getVoices();
   }
+
+  Future<void> _getVoices() async {
+    try {
+      allVoices = await ttsService.getAllVoices();
+      if (allVoices.isNotEmpty) {
+        // setState(() {
+        //   selectedVoice = allVoices[0]['code'];
+        // });
+      } else {
+        setState(() {
+          selectedVoice = null;
+        });
+      }
+    } catch (e) {
+      print('Error fetching voices: $e');
+    }
+  }
+
+
+  Widget _getVoiceLabel(dynamic voice) {
+    String gender = voice['gender'];
+    String imagePath;
+    if (gender == 'Female') {
+      imagePath = 'assets/images/female.webp';
+    } else {
+      imagePath = 'assets/images/male.png';
+    }
+
+    String displayName = voice['name'].split('(')[0].trim();
+
+    return Row(
+      children: [
+        Image.asset(imagePath, height: 24, width: 24),
+        SizedBox(width: 8),
+        Text(displayName),
+      ],
+    );
+  }
+
+
   void _loadAgentConfig() async {
     final agentProvider = Provider.of<AgentProvider>(context, listen: false);
     try {
@@ -40,9 +89,85 @@ class _TalkPageState extends State<TalkPage> {
       print('Error loading agent config: $e');
     }
   }
+
+  void _showGenderFilterOptions() {
+    showCupertinoModalPopup(
+      context: context,
+      builder: (BuildContext context) {
+        return CupertinoActionSheet(
+          title: Text("Select Voice Gender"),
+          actions: [
+            CupertinoActionSheetAction(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Male"),
+                  if (selectedGender == 'Male') Icon(CupertinoIcons.checkmark)
+                ],
+              ),
+              onPressed: () {
+                setState(() {
+                  selectedGender = 'Male';
+                  Navigator.pop(context);
+                });
+              },
+            ),
+            CupertinoActionSheetAction(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Female"),
+                  if (selectedGender == 'Female') Icon(CupertinoIcons.checkmark)
+                ],
+              ),
+              onPressed: () {
+                setState(() {
+                  selectedGender = 'Female';
+                  Navigator.pop(context);
+                });
+              },
+            ),
+            CupertinoActionSheetAction(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text("Neutral"),
+                  if (selectedGender == 'neutral') Icon(CupertinoIcons.checkmark)
+                ],
+              ),
+              onPressed: () {
+                setState(() {
+                  selectedGender = 'neutral';
+                  Navigator.pop(context);
+                });
+              },
+            ),
+          ],
+          cancelButton: CupertinoActionSheetAction(
+            child: Text("Cancel"),
+            isDestructiveAction: true,
+            onPressed: () {
+              Navigator.pop(context);
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final agentProvider = Provider.of<AgentProvider>(context);
+
+    // Filter voices based on selected gender
+    List<dynamic> filteredVoices = selectedGender == 'neutral'
+        ? allVoices
+        : allVoices.where((voice) => voice['gender'] == selectedGender).toList();
+    if (filteredVoices.isNotEmpty && !filteredVoices.any((voice) => voice['code'] == selectedVoice)) {
+      // selectedVoice = filteredVoices[0]['code']; // Set to the first available voice in the filtered list
+    } else if (filteredVoices.isEmpty) {
+      selectedVoice = null; // Set to null if no voices match the filter
+    }
 
     List<String> filteredLanguages = agentProvider.languageCodes.keys
         .where((language) => language.toLowerCase().contains(_searchQuery.toLowerCase()))
@@ -50,7 +175,7 @@ class _TalkPageState extends State<TalkPage> {
 
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: ColorTheme.primary,
+        backgroundColor: Color(0xFF19437D),
         centerTitle: true,
         title: Text('Configure TALK/SPEECH'),
       ),
@@ -65,11 +190,21 @@ class _TalkPageState extends State<TalkPage> {
                 style: TextStyle(fontSize: 16),
               ),
               SizedBox(height: 20),
-
-              SizedBox(height: 20),
-              Text(
-                "Select Languages ↓ ",
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Enable Voice Interaction', style: TextStyle(color: Color(0xFF19437D))),
+                  CupertinoSwitch(
+                    activeColor: Color(0xFF19437D),
+                    value: agentProvider.speechToTextEnabled,
+                    onChanged: (bool value) {
+                      agentProvider.toggleSpeechToText(value);
+                    },
+                  ),
+                ],
               ),
+              SizedBox(height: 20),
+              Text("Select Languages ↓ "),
               SizedBox(height: 10),
               CupertinoTextField(
                 controller: _searchController,
@@ -85,7 +220,8 @@ class _TalkPageState extends State<TalkPage> {
                 },
               ),
               SizedBox(height: 10),
-              Expanded(
+              Container(
+                height: 180,
                 child: SingleChildScrollView(
                   child: Wrap(
                     spacing: 8.0,
@@ -94,11 +230,9 @@ class _TalkPageState extends State<TalkPage> {
                       return CupertinoFilterChip(
                         label: language,
                         selected: agentProvider.selectedLanguages.contains(language),
-                        selectedColor: ColorTheme.primary,
+                        selectedColor: Color(0xFF19437D),
                         onSelected: (bool selected) {
                           setState(() {
-                            print('selected: $selected');
-                            print('language: $language');
                             agentProvider.toggleLanguageSelection(language);
                           });
                         },
@@ -107,16 +241,63 @@ class _TalkPageState extends State<TalkPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              Text("Select Voice ↓ "),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text('Speech to Text', style: TextStyle(color: ColorTheme.primary)),
-                  CupertinoSwitch(
-                    activeColor: ColorTheme.primary,
-                    value: agentProvider.speechToTextEnabled,
-                    onChanged: (bool value) {
-                      agentProvider.toggleSpeechToText(value);
+                  Expanded(
+                    child: DropdownButton<String>(
+                      isExpanded: true,
+                      value: agentProvider.voice_code,
+                      hint: Text('Select Voice'),
+                      dropdownColor: Colors.white,
+                      // Inside your DropdownButton's items map
+                      items: filteredVoices.map<DropdownMenuItem<String>>((dynamic voice) {
+                        return DropdownMenuItem<String>(
+                          value: voice['code'], // Store the voice code
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(child: _getVoiceLabel(voice)),
+                              InkWell(
+                                onTap: () async {
+                                    setState(() {
+                                      _isLoading = true;
+                                    });
+
+                                    Uint8List audioBytes = await ttsService.callApiForVoice(voice['code']);
+                                    try {
+                                      await _audioPlayer.play(BytesSource(audioBytes));
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+                                    } catch (e) {
+                                      setState(() {
+                                        _isLoading = false;
+                                      });
+                                    }
+                                },
+                                child: Icon(
+                                  Icons.volume_up,
+                                  color: Color(0xFF19437D),
+                                ),
+                              ),
+                            ],
+                          ),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          selectedVoice = newValue;
+                          agentProvider.updateVoiceCode(newValue);
+                        });
+                      },
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(Icons.filter_alt_outlined, color: Color(0xFF19437D)), // Filter icon
+                    onPressed: () {
+                      _showGenderFilterOptions();
                     },
                   ),
                 ],
@@ -125,8 +306,8 @@ class _TalkPageState extends State<TalkPage> {
               Container(
                 width: double.infinity,
                 child: CupertinoButton(
-                  color: ColorTheme.primary,
-                  child: Text('Next'),
+                  color: Color(0xFF19437D),
+                  child: Text('Save Changes'),
                   onPressed: () async {
                     final agent = Agent(
                       id: widget.agentId,
@@ -136,6 +317,7 @@ class _TalkPageState extends State<TalkPage> {
                         displayName: agentProvider.displayName,
                         image: agentProvider.image,
                         colors: agentProvider.colors,
+                          voice_code: selectedVoice,
                       ),
                     );
 

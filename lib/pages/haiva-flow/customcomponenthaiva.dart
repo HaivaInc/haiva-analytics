@@ -7,11 +7,13 @@ import 'package:markdown/markdown.dart' as md;
 import 'package:flutter/material.dart';
 import 'dart:typed_data';
 
+import '../../model_chat/agent_detail.dart';
 import '../../theme/colortheme.dart';
 import '../../widget/bubble.dart';
 import '../../widget/button.dart';
 import '../../widget/chart.dart';
 import '../../widget/form.dart';
+import '../../widget/selecthtml.dart';
 import '../../widget/selectmarkdown.dart';
 import '../../widget/table.dart';
 
@@ -23,14 +25,14 @@ class CustomComponentHaiva extends StatefulWidget {
   final Function(Map<String, dynamic>) onFormSubmit;
   final String? locale;
   final bool stopSpeaking;
-
+final AgentConfigs agentDetails;
   const CustomComponentHaiva({
     required this.payload,
     required this.onButtonPressed,
     required this.onFormSubmit,
     required  this.stopSpeaking,
     Key? key,
-    this.locale, required bool speakerOff,
+    this.locale, required bool speakerOff, required this.agentDetails,
   }) : super(key: key);
 
   @override
@@ -163,7 +165,7 @@ class _CustomComponentHaivaState extends State<CustomComponentHaiva> {
   }
   Future<void> convertTextToSpeechAndPlay(String text, String language) async {
     try {
-      Uint8List audioBytes = await _ttsService.textToSpeech(text, language);
+      Uint8List audioBytes = await _ttsService.textToSpeech(text, language,widget.agentDetails.voice_code);
 
       await _audioPlayer.play(BytesSource(audioBytes)); // Use BytesSource for playing the audio
       //   print("audio playing started : $audioBytes");
@@ -201,7 +203,7 @@ class _CustomComponentHaivaState extends State<CustomComponentHaiva> {
           audioBytes = _cachedAudio[cleanText]!;
         } else {
           // Fetch new audio and cache it
-          audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US');
+          audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US',widget.agentDetails.voice_code);
           _cachedAudio[cleanText] = audioBytes;
         }
 
@@ -386,7 +388,7 @@ class _CustomComponentHaivaState extends State<CustomComponentHaiva> {
       if (_cachedAudio.containsKey(cleanText)) {
         audioBytes = _cachedAudio[cleanText]!;
       } else {
-        audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US');
+        audioBytes = await _ttsService.textToSpeech(cleanText, _selectedLocale ?? 'en-US',widget.agentDetails.voice_code);
         _cachedAudio[cleanText] = audioBytes;
       }
 
@@ -429,7 +431,7 @@ class _CustomComponentHaivaState extends State<CustomComponentHaiva> {
                         Padding(
                           padding: EdgeInsets.only(right: 30, bottom: 20),  // Add padding to make room for the button
                           child: BubbleWidget(
-                            widget: SelectableMarkdown(data: data['message']),
+                            widget: HtmlTextHandle(data: data['message']),
                           ),
                         ),
                         Positioned(

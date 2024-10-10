@@ -51,36 +51,40 @@ class _MainNavigationPageState extends State<MainNavigationPage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-
+automaticallyImplyLeading: true,
           backgroundColor: ColorTheme.primary,
           actions: [
-            CupertinoSegmentedControl<int>(
-         selectedColor: ColorTheme.accent,
+            CupertinoSlidingSegmentedControl<int>(
+              padding: EdgeInsets.all(3),
+              backgroundColor: Colors.white,
+              thumbColor: CupertinoColors.systemGrey3,
 
-          borderColor:ColorTheme.secondary ,
-            children: const {
-              0: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text('Chat'),
-              ),
-              1: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text('Settings'),
-              ),
+              children: const {
+                0: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text('Chat'),
+                ),
+                1: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text('Settings'),
+                ),
 
-              2: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20),
-                child: Text('Profile'),
-              ),
-            },
-            onValueChanged: (int index) {
-              setState(() {
-                _selectedIndex = index;
-                _pageController.jumpToPage(index);
-              });
-            },
-            groupValue: _selectedIndex,
-          )],
+                2: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20),
+                  child: Text('Profile'),
+                ),
+              },
+              onValueChanged: (int? index) {
+                setState(() {
+                  if (index != null) {
+                    _selectedIndex = index;
+                    _pageController.jumpToPage(index);
+                  }
+                });
+              },
+              groupValue: _selectedIndex,
+            )],
+
         ),
         body: SafeArea(
           child: PageView(
