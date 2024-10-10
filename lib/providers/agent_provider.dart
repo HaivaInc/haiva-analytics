@@ -67,7 +67,7 @@ class AgentProvider with ChangeNotifier {
   List<String> get selectedLanguages => _selectedLanguages;
 
   bool _speechToTextEnabled = true;
-  String _voice_code = '';
+  String _voice_code = 'de-DE-FlorianMultilingualNeural';
   bool get speechToTextEnabled => _speechToTextEnabled;
   // New properties for AgentConfig
   String _name = 'HAIVA';
