@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
+import 'package:high_chart/high_chart.dart';
 import '../theme/colortheme.dart';
 
 class ExampleChart extends StatefulWidget {
- final String? chartData;
+  final String? chartData;
   const ExampleChart({Key? key, required this.chartData}) : super(key: key);
 
   @override
@@ -60,24 +61,25 @@ class ExampleChartState extends State<ExampleChart> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // body: Center(
-      //   child: _isLoading
-      //       ?  SpinKitWave(color: ColorTheme.secondary)
-      //       : HighCharts(
-      //
-      //     loader: const SizedBox(
-      //       width: 200,
-      //       child: SpinKitCubeGrid(color: Colors.blueAccent,),
-      //     ),
-      //     size:  Size(double.infinity, double.infinity),
-      //     data: _chartData,
-      //     scripts: const [
-      //       "https://code.highcharts.com/highcharts.js",
-      //       'https://code.highcharts.com/modules/networkgraph.js',
-      //       'https://code.highcharts.com/modules/exporting.js',
-      //     ],
-      //   ),
-      // ),
+      body: Center(
+        child: _isLoading
+            ?  SpinKitWave(color: ColorTheme.secondary)
+            : HighCharts(
+
+          loader: const SizedBox(
+            width: 200,
+            child: SpinKitCubeGrid(color: Colors.blueAccent,),
+          ),
+          size:  Size(double.infinity, double.infinity),
+          data: _chartData,
+          scripts: const [
+            "https://code.highcharts.com/highcharts.js",
+            'https://code.highcharts.com/modules/networkgraph.js',
+            'https://code.highcharts.com/modules/exporting.js',
+          ],
+        ),
+      ),
     );
   }
 }
+
