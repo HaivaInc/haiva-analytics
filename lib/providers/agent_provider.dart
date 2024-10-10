@@ -67,6 +67,7 @@ class AgentProvider with ChangeNotifier {
   List<String> get selectedLanguages => _selectedLanguages;
 
   bool _speechToTextEnabled = true;
+  String _voice_code = '';
   bool get speechToTextEnabled => _speechToTextEnabled;
   // New properties for AgentConfig
   String _name = 'HAIVA';
@@ -83,6 +84,7 @@ class AgentProvider with ChangeNotifier {
   String get description => _description;
   String get displayName => _displayName;
   String get image => _image;
+  String get voice_code => _voice_code;
   Map<String, dynamic> get colors => _colors;
   void toggleTheme() {
     if (_themeMode == ThemeMode.light) {
@@ -153,6 +155,10 @@ class AgentProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  void updateVoiceCode(code) {
+    _voice_code = code;
+  }
+
   void toggleSpeechToText(bool value) {
     _speechToTextEnabled = value;
     notifyListeners();
@@ -210,6 +216,7 @@ class AgentProvider with ChangeNotifier {
     _selectedLanguages = config.languages?.map((code) => languageCodes.entries.firstWhere((entry) => entry.value == code, orElse: () => MapEntry(code, code)).key).toList() ?? _selectedLanguages;
   //  _selectedLanguages = config.languages ?? _selectedLanguages;
     _speechToTextEnabled = config.isSpeech2text ?? _speechToTextEnabled;
+    _voice_code = config.voice_code ?? _voice_code;
     notifyListeners();
   }
 }

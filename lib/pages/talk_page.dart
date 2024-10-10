@@ -43,9 +43,9 @@ class _TalkPageState extends State<TalkPage> {
     try {
       allVoices = await ttsService.getAllVoices();
       if (allVoices.isNotEmpty) {
-        setState(() {
-          selectedVoice = allVoices[0]['code'];
-        });
+        // setState(() {
+        //   selectedVoice = allVoices[0]['code'];
+        // });
       } else {
         setState(() {
           selectedVoice = null;
@@ -164,7 +164,7 @@ class _TalkPageState extends State<TalkPage> {
         ? allVoices
         : allVoices.where((voice) => voice['gender'] == selectedGender).toList();
     if (filteredVoices.isNotEmpty && !filteredVoices.any((voice) => voice['code'] == selectedVoice)) {
-      selectedVoice = filteredVoices[0]['code']; // Set to the first available voice in the filtered list
+      // selectedVoice = filteredVoices[0]['code']; // Set to the first available voice in the filtered list
     } else if (filteredVoices.isEmpty) {
       selectedVoice = null; // Set to null if no voices match the filter
     }
@@ -248,7 +248,7 @@ class _TalkPageState extends State<TalkPage> {
                   Expanded(
                     child: DropdownButton<String>(
                       isExpanded: true,
-                      value: selectedVoice,
+                      value: agentProvider.voice_code,
                       hint: Text('Select Voice'),
                       dropdownColor: Colors.white,
                       // Inside your DropdownButton's items map
@@ -289,6 +289,7 @@ class _TalkPageState extends State<TalkPage> {
                       onChanged: (String? newValue) {
                         setState(() {
                           selectedVoice = newValue;
+                          agentProvider.updateVoiceCode(newValue);
                         });
                       },
                     ),
