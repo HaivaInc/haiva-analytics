@@ -4,10 +4,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:haivanalytics/theme/colortheme.dart';
 import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../constants.dart';
+import '../models/agent.dart';
+import '../providers/agent_provider.dart';
+import '../services/agent_service.dart';
 
 class DeployInfoPage extends StatefulWidget {
   final String agent;
@@ -27,13 +30,22 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
   int _apkCheckCounter = 0;
   String _apkFileUrl = '';
   int _countdown = 300;
+  Agent? agent;
+  bool _isLoading = false;
   @override
-  bool get wantKeepAlive => true; // Keeps state when navigating
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
+    _loadAgentDetails();
     _loadState();
+  }
+
+  Future<void> _loadAgentDetails() async {
+    final agentProvider = Provider.of<AgentProvider>(context, listen: false);
+    agent = await agentProvider.getAgentById(widget.agent);
+    setState(() {});
   }
 
   @override
@@ -41,6 +53,7 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
     _apkCheckTimer?.cancel(); // Ensure timer is cancelled on dispose
     super.dispose();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -51,59 +64,231 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
         title: Text('Deploy Info'),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                SizedBox(height: 20),
-                _buildSegmentedControl(),
-                SizedBox(height: 20),
-                _buildSelectedContent(),
-                if (_selectedSegment == 1) ...[
-                  if (_isGeneratingAPK)
-                    Column(
-                      children: [
-                        CupertinoActivityIndicator(animating: true, radius: 20),
-                        SizedBox(height: 10),
-                        Text("This May Take Up To 5 Minutes",
-                            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(height: 20),
+                      _buildSegmentedControl(),
+                      SizedBox(height: 20),
+                      _buildSelectedContent(),
+                      if (_selectedSegment == 1) ...[
+                        if (_isGeneratingAPK)
+                          Column(
+                            children: [
+                              CupertinoActivityIndicator(animating: true, radius: 20),
+                              SizedBox(height: 10),
+                              Text(
+                                "This May Take Up To 5 Minutes",
+                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                              ),
+                            ],
+                          )
+                        else
+                          CupertinoButton(
+                            color: ColorTheme.primary,
+                            disabledColor: ColorTheme.secondary,
+                            onPressed: _isAPKAvailable ? null : _generateAPK,
+                            child: Text(_isAPKAvailable ? 'APK Available' : 'Generate APK'),
+                          ),
+                        if (_isAPKAvailable)
+                          Column(
+                            children: [
+                              ElevatedButton(
+                                onPressed: _handleAPKDownload,
+                                child: Text('Download APK'),
+                              ),
+                              SizedBox(height: 10),
+                              ElevatedButton(
+                                onPressed: _handleAPKQR,
+                                child: Text('Show APK QR Code'),
+                              ),
+                            ],
+                          ),
+                        if (_isError)
+                          Text(
+                            'Error in APK Generation',
+                            style: TextStyle(color: Colors.red),
+                          ),
                       ],
-                    )
-                  else
-                    CupertinoButton(
-                      color: ColorTheme.primary,
-                      disabledColor: ColorTheme.secondary,
-                      onPressed: _isAPKAvailable ? null : _generateAPK,
-                      child: Text(_isAPKAvailable ? 'APK Available' : 'Generate APK'),
-                    ),
-                  if (_isAPKAvailable)
-                    Column(
-                      children: [
-                        ElevatedButton(
-                          onPressed: _handleAPKDownload,
-                          child: Text('Download APK'),
-                        ),
-                        SizedBox(height: 10),
-                        ElevatedButton(
-                          onPressed: _handleAPKQR,
-                          child: Text('Show APK QR Code'),
-                        ),
-                      ],
-                    ),
-                  if (_isError)
-                    Text(
-                      'Error in APK Generation',
-                      style: TextStyle(color: Colors.red),
-                    ),
-                ],
-              ],
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+            // Full-width button at the bottom of the screen
+            if ((agent?.isDeployed ?? false) && (agent?.is_published == false))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _publishToHub(agent?.id);
+                    },
+                    child: Text(
+                      'Publish to Agent Hub',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            if ((agent?.is_published ?? false) && (agent?.is_featured == false))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _unpublishToHub(agent?.id);
+                    },
+                    child: Text(
+                      'Unpublish from Agent Hub',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            if ((agent?.is_published ?? false) && (agent?.is_featured == false))
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _featureAgent(agent?.id);
+                    },
+                    child: Text(
+                      'Mark as Featured Agent',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            if (agent?.is_featured ?? false)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 6.0, horizontal: 16.0),
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      _DefeatureAgent(agent?.id);
+                    },
+                    child: Text(
+                      'Unmark as Featured Agent',
+                      style: TextStyle(
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            SizedBox(height: 10),
+          ],
         ),
       ),
     );
+  }
+
+  Future<void> _publishToHub(String? agentID) async {
+    try {
+      final agentService = AgentService();
+      final response = await agentService.publishAgent(agentID!);
+      Map<String, dynamic> res = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Agent published successfully')),
+        );
+        _loadAgentDetails();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Failed to publish agent')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+  Future<void> _unpublishToHub(String? agentID) async {
+    try {
+      final agentService = AgentService();
+      final response = await agentService.unPublishAgent(agentID!);
+      Map<String, dynamic> res = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Agent unpublished successfully')),
+        );
+        _loadAgentDetails();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Failed to unpublish agent')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+  Future<void> _featureAgent(String? agentID) async {
+    try {
+      final agentService = AgentService();
+      final response = await agentService.featureAgent(agentID!);
+      Map<String, dynamic> res = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Agent successfully featured')),
+        );
+        _loadAgentDetails();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Failed to feature agent')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  Future<void> _DefeatureAgent(String? agentID) async {
+    try {
+      final agentService = AgentService();
+      final response = await agentService.DefeatureAgent(agentID!);
+      Map<String, dynamic> res = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Agent successfully unfeatured')),
+        );
+        _loadAgentDetails();
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Failed to unfeature agent')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
   }
 
   Future<void> _generateAPK() async {
@@ -314,11 +499,8 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
         children: [
           Align(
             alignment: Alignment.center,
-
-
           ),
           SizedBox(height: 20),
-
         ],
       );
     }

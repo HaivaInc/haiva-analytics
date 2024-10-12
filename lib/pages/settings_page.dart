@@ -48,7 +48,7 @@ class _SettingsPageState extends State<SettingsPage> {
         page = ConnectionsPage(agentId: widget.agentId,);
         break;
       case 3:
-        page = DeployInfoPage(agent: widget.agentId,);
+        page = DeployInfoPage(agent: widget.agentId);
         break;
       default:
         return;

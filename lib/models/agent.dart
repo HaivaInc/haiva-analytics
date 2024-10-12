@@ -8,6 +8,7 @@ class Agent {
   final bool? isActive;
   final bool? isDeployed;
   final bool? is_published;
+  final bool? is_featured;
   final AgentConfigs? agentConfigs;
 
 
@@ -19,6 +20,7 @@ class Agent {
      this.isActive,
      this.isDeployed,
     this.is_published,
+    this.is_featured,
     required    this.agentConfigs,
 
   });
@@ -33,6 +35,7 @@ class Agent {
       isActive: json['is_active'] ,
       isDeployed: json['is_deployed'],
         is_published: json['is_published'],
+        is_featured: json['is_featured'],
       agentConfigs: json['agent_configs'] != null
           ? AgentConfigs.fromJson(json['agent_configs'])
           : AgentConfigs(
@@ -50,6 +53,7 @@ class Agent {
     bool? isActive,
     bool? isDeployed,
     bool? is_published,
+    bool? is_featured,
     AgentConfigs? agentConfigs,
   }) {
     return Agent(
@@ -60,6 +64,7 @@ class Agent {
       isActive: isActive ?? this.isActive,
       isDeployed: isDeployed ?? this.isDeployed,
       is_published: is_published ?? this.is_published,
+      is_featured: is_featured ?? this.is_featured,
       agentConfigs: agentConfigs ?? this.agentConfigs,
     );
   }

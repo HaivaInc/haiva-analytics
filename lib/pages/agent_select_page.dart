@@ -93,11 +93,32 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res['message'] ?? 'Published successfully')),
+          SnackBar(content: Text(res['message'] ?? 'Agent published successfully')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res['message'] ?? 'Publish failed')),
+          SnackBar(content: Text(res['message'] ?? 'Failed to publish agent')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+  Future<void> _unpublishToHub(String? agentID) async {
+    try {
+      final agentService = AgentService();
+      final response = await agentService.unPublishAgent(agentID!);
+      Map<String, dynamic> res = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Agent unpublished successfully')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Failed to unpublish agent')),
         );
       }
     } catch (e) {
@@ -114,11 +135,33 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res['message'] ?? 'Agent Featured Successfully')),
+          SnackBar(content: Text(res['message'] ?? 'Agent successfully featured')),
         );
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(res['message'] ?? 'Feature Agent failed')),
+          SnackBar(content: Text(res['message'] ?? 'Failed to feature agent')),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    }
+  }
+
+  Future<void> _DefeatureAgent(String? agentID) async {
+    try {
+      final agentService = AgentService();
+      final response = await agentService.DefeatureAgent(agentID!);
+      Map<String, dynamic> res = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Agent successfully unfeatured')),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(res['message'] ?? 'Failed to unfeature agent')),
         );
       }
     } catch (e) {
@@ -742,7 +785,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                 },
                 isDestructiveAction: false,
               ),
-              if (agent.isDeployed ?? false)
+              if ((agent.isDeployed ?? false) && (agent.is_published == false))
                 CupertinoActionSheetAction(
                   child: Text('Publish to Agent Hub'),
                   onPressed: () {
@@ -751,21 +794,30 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   },
                   isDestructiveAction: false,
                 ),
-              if (agent.is_published ?? false)
+              if ((agent.is_published ?? false) && (agent.is_featured == false))
                 CupertinoActionSheetAction(
                   child: Text('Unpublish from Agent Hub'),
                   onPressed: () {
                     Navigator.pop(context);
-                    // _publishToHub(agent.id); // Define this method to handle publishing
+                    _unpublishToHub(agent.id);
                   },
                   isDestructiveAction: false,
                 ),
-              if (agent.is_published ?? false)
+              if ((agent.is_published ?? false) && (agent.is_featured == false))
                 CupertinoActionSheetAction(
-                  child: Text('Mark it as Featured Agent'),
+                  child: Text('Mark as Featured Agent'),
                   onPressed: () {
                     Navigator.pop(context);
                     _featureAgent(agent.id);
+                  },
+                  isDestructiveAction: false,
+                ),
+              if (agent.is_featured ?? false)
+                CupertinoActionSheetAction(
+                  child: Text('Unmark as Featured Agent'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                    _DefeatureAgent(agent.id);
                   },
                   isDestructiveAction: false,
                 ),

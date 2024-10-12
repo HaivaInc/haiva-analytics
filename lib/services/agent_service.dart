@@ -180,7 +180,7 @@ print("response = ${response.statusCode}");
 
   Future<http.Response> publishAgent(String agentID) async {
     final uri = Uri.parse(
-        'https://app-haiva.gateway.apiplatform.io/v1/publishAgent?agentId=$agentID');
+        '$baseUrl/publishAgent?agentId=$agentID');
     try {
       final response = await http.post(
         uri,
@@ -189,20 +189,31 @@ print("response = ${response.statusCode}");
         },
         body: '{}',
       );
-      if (response.statusCode == 200) {
-        print('Agent published successfully: $agentID');
-      } else {
-        print('Failed to publish agent: ${response.statusCode}');
-      }
       return response;
     } catch (e) {
-      print('Error publishing agent: $e');
+      rethrow;
+    }
+  }
+
+  Future<http.Response> unPublishAgent(String agentID) async {
+    final uri = Uri.parse(
+        '$baseUrl/unpublishAgent?agentId=$agentID');
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      );
+      return response;
+    } catch (e) {
       rethrow;
     }
   }
   Future<http.Response> featureAgent(String agentID) async {
     final uri = Uri.parse(
-        'https://app-haiva.gateway.apiplatform.io/v1/featureAgent?agentId=$agentID');
+        '$baseUrl/featureAgent?agentId=$agentID');
     try {
       final response = await http.post(
         uri,
@@ -211,15 +222,27 @@ print("response = ${response.statusCode}");
         },
         body: '{}',
       );
-      if (response.statusCode == 200) {
-        print('Agent published successfully: $agentID');
-      } else {
-        print('Failed to publish agent: ${response.statusCode}');
-      }
       return response;
     } catch (e) {
-      print('Error publishing agent: $e');
       rethrow;
     }
   }
+
+  Future<http.Response> DefeatureAgent(String agentID) async {
+    final uri = Uri.parse(
+        '$baseUrl/deFeatureAgent?agentId=$agentID');
+    try {
+      final response = await http.post(
+        uri,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: '{}',
+      );
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
 }
