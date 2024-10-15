@@ -172,6 +172,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             SizedBox(height: 20),
       Text(
         'Welcome to HAIVA Analytics',
+        textAlign: TextAlign.center,
         style: GoogleFonts.raleway(
           fontWeight: FontWeight.bold,
           color: Colors.white,

@@ -790,16 +790,67 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   child: Text('Publish to Agent Hub'),
                   onPressed: () {
                     Navigator.pop(context);
-                    _publishToHub(agent.id); // Define this method to handle publishing
+                    // Show confirmation dialog
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return CupertinoAlertDialog(
+                          title: Text('Confirm Publish'),
+                          content: Text('Are you sure you want to publish this agent to the Agent Hub?'),
+                          actions: [
+                            CupertinoDialogAction(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                            CupertinoDialogAction(
+                              child: Text('Publish'),
+                              onPressed: () {
+                                Navigator.pop(context); // Close the dialog
+                                _publishToHub(agent.id); // Call the publish method
+                              },
+                              isDestructiveAction: false,
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   },
                   isDestructiveAction: false,
                 ),
+
               if ((agent.is_published ?? false) && (agent.is_featured == false))
                 CupertinoActionSheetAction(
                   child: Text('Unpublish from Agent Hub'),
                   onPressed: () {
                     Navigator.pop(context);
-                    _unpublishToHub(agent.id);
+                    // Show confirmation dialog
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return CupertinoAlertDialog(
+                          title: Text('Confirm Unpublish'),
+                          content: Text('Are you sure you want to unpublish this agent from the Agent Hub?'),
+                          actions: [
+                            CupertinoDialogAction(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                            CupertinoDialogAction(
+                              child: Text('Unpublish'),
+                              onPressed: () {
+                                Navigator.pop(context); // Close the dialog
+                                _unpublishToHub(agent.id); // Call the unpublish method
+                              },
+                              isDestructiveAction: true,
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   },
                   isDestructiveAction: false,
                 ),
@@ -808,7 +859,32 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   child: Text('Mark as Featured Agent'),
                   onPressed: () {
                     Navigator.pop(context);
-                    _featureAgent(agent.id);
+                    // Show confirmation dialog
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return CupertinoAlertDialog(
+                          title: Text('Confirm Feature'),
+                          content: Text('Are you sure you want to mark this agent as a Featured Agent?'),
+                          actions: [
+                            CupertinoDialogAction(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                            CupertinoDialogAction(
+                              child: Text('Feature'),
+                              onPressed: () {
+                                Navigator.pop(context); // Close the dialog
+                                _featureAgent(agent.id); // Call the feature method
+                              },
+                              isDestructiveAction: false,
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   },
                   isDestructiveAction: false,
                 ),
@@ -817,7 +893,32 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                   child: Text('Unmark as Featured Agent'),
                   onPressed: () {
                     Navigator.pop(context);
-                    _DefeatureAgent(agent.id);
+                    // Show confirmation dialog
+                    showCupertinoDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return CupertinoAlertDialog(
+                          title: Text('Confirm Unfeature'),
+                          content: Text('Are you sure you want to unmark this agent as a Featured Agent?'),
+                          actions: [
+                            CupertinoDialogAction(
+                              child: Text('Cancel'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                            CupertinoDialogAction(
+                              child: Text('Unfeature'),
+                              onPressed: () {
+                                Navigator.pop(context); // Close the dialog
+                                _DefeatureAgent(agent.id); // Call the defeature method
+                              },
+                              isDestructiveAction: true,
+                            ),
+                          ],
+                        );
+                      },
+                    );
                   },
                   isDestructiveAction: false,
                 ),

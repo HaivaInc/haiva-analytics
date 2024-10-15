@@ -222,41 +222,4 @@ class AgentProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  // Future<void> _publishToHub(String? agentID) async {
-  //   try {
-  //     final agentService = AgentService();
-  //     final response = await agentService.publishAgent(agentID!);
-  //     Map<String, dynamic> res = jsonDecode(response.body);
-  //
-  //     if (response.statusCode == 200) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(res['message'] ?? 'Agent published successfully')),
-  //       );
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         SnackBar(content: Text(res['message'] ?? 'Failed to publish agent')),
-  //       );
-  //     }
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Error: $e')),
-  //     );
-  //   }
-  // }
-  //
-  // Future<void> publishToHub(BuildContext context, String? agentID) async {
-  //   try {
-  //     final response = await _agentService.publishAgent(agentID!);
-  //     Map<String, dynamic> res = jsonDecode(response.body);
-  //
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text(res['message'] ?? 'Agent published successfully')),
-  //     );
-  //   } catch (e) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(content: Text('Error: $e')),
-  //     );
-  //   }
-  // }
-
 }

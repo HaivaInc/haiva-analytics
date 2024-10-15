@@ -129,8 +129,35 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      _publishToHub(agent?.id);
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return CupertinoAlertDialog(
+                            title: Text('Confirm Publish'),
+                            content: Text('Are you sure you want to publish this agent to the Agent Hub?'),
+                            actions: [
+                              CupertinoDialogAction(
+                                child: Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              CupertinoDialogAction(
+                                child: Text('Publish'),
+                                onPressed: () {
+                                  Navigator.pop(context); // Close the dialog
+                                  _publishToHub(agent?.id); // Call the publish method
+                                },
+                                isDestructiveAction: false,
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorTheme.primary,
+                    ),
                     child: Text(
                       'Publish to Agent Hub',
                       style: TextStyle(
@@ -147,8 +174,35 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      _unpublishToHub(agent?.id);
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return CupertinoAlertDialog(
+                            title: Text('Confirm Unpublish'),
+                            content: Text('Are you sure you want to unpublish this agent from the Agent Hub?'),
+                            actions: [
+                              CupertinoDialogAction(
+                                child: Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              CupertinoDialogAction(
+                                child: Text('Unpublish'),
+                                onPressed: () {
+                                  Navigator.pop(context); // Close the dialog
+                                  _unpublishToHub(agent?.id); // Call the unpublish method
+                                },
+                                isDestructiveAction: true,
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorTheme.primary,
+                    ),
                     child: Text(
                       'Unpublish from Agent Hub',
                       style: TextStyle(
@@ -165,8 +219,35 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      _featureAgent(agent?.id);
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return CupertinoAlertDialog(
+                            title: Text('Confirm Feature'),
+                            content: Text('Are you sure you want to mark this agent as a Featured Agent?'),
+                            actions: [
+                              CupertinoDialogAction(
+                                child: Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              CupertinoDialogAction(
+                                child: Text('Feature'),
+                                onPressed: () {
+                                  Navigator.pop(context); // Close the dialog
+                                  _featureAgent(agent?.id); // Call the feature method
+                                },
+                                isDestructiveAction: false,
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorTheme.primary,
+                    ),
                     child: Text(
                       'Mark as Featured Agent',
                       style: TextStyle(
@@ -183,8 +264,35 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      _DefeatureAgent(agent?.id);
+                      showCupertinoDialog(
+                        context: context,
+                        builder: (BuildContext context) {
+                          return CupertinoAlertDialog(
+                            title: Text('Confirm Unfeature'),
+                            content: Text('Are you sure you want to unmark this agent as a Featured Agent?'),
+                            actions: [
+                              CupertinoDialogAction(
+                                child: Text('Cancel'),
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+                              ),
+                              CupertinoDialogAction(
+                                child: Text('Unfeature'),
+                                onPressed: () {
+                                  Navigator.pop(context); // Close the dialog
+                                  _DefeatureAgent(agent?.id); // Call the defeature method
+                                },
+                                isDestructiveAction: true,
+                              ),
+                            ],
+                          );
+                        },
+                      );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorTheme.primary,
+                    ),
                     child: Text(
                       'Unmark as Featured Agent',
                       style: TextStyle(
@@ -212,6 +320,7 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
           SnackBar(content: Text(res['message'] ?? 'Agent published successfully')),
         );
         _loadAgentDetails();
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(res['message'] ?? 'Failed to publish agent')),
@@ -234,6 +343,7 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
           SnackBar(content: Text(res['message'] ?? 'Agent unpublished successfully')),
         );
         _loadAgentDetails();
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(res['message'] ?? 'Failed to unpublish agent')),
@@ -256,6 +366,7 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
           SnackBar(content: Text(res['message'] ?? 'Agent successfully featured')),
         );
         _loadAgentDetails();
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(res['message'] ?? 'Failed to feature agent')),
@@ -279,6 +390,7 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
           SnackBar(content: Text(res['message'] ?? 'Agent successfully unfeatured')),
         );
         _loadAgentDetails();
+        Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(res['message'] ?? 'Failed to unfeature agent')),
