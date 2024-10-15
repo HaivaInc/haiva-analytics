@@ -335,7 +335,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                     context: context,
                     builder: (context) => CupertinoAlertDialog(
                       title: Text('Success'),
-                      content: Text('Deployment started successfully!'),
+                      content: Text('Deployment successful!'),
                       actions: [
                         CupertinoDialogAction(
                           child: Text('OK'),
