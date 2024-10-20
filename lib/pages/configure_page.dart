@@ -181,7 +181,7 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
     }
   }
 
-  Widget _buildTextField(TextEditingController controller, String placeholder, IconData icon) {
+  Widget _buildTextField(TextEditingController controller, String placeholder, IconData icon , bool disableField) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
@@ -203,6 +203,7 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
                  style: TextStyle(color: CupertinoColors.systemGrey, fontSize: 11),
                ),
                 CupertinoTextField(
+                  enabled: disableField,
                   controller: controller,
                   placeholder: placeholder,
                   padding: EdgeInsets.zero,
@@ -289,11 +290,11 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildTextField(_nameController, 'Name', CupertinoIcons.person),
+              _buildTextField(_nameController, 'Name', CupertinoIcons.person,false),
               SizedBox(height: 16),
-              _buildTextField(_descriptionController, 'Description', CupertinoIcons.doc_text),
+              _buildTextField(_descriptionController, 'Description', CupertinoIcons.doc_text,false),
               SizedBox(height: 16),
-              _buildTextField(_displayNameController, 'Display Name', CupertinoIcons.textformat),
+              _buildTextField(_displayNameController, 'Display Name', CupertinoIcons.textformat,true),
               SizedBox(height: 16),
               _buildColorSelector('Primary Color', _primaryColor, () => _pickColor('primary'), CupertinoIcons.paintbrush),
               SizedBox(height: 16),
@@ -309,7 +310,7 @@ class _ConfigureEditPageState extends State<ConfigureEditPage> {
 
                     final agent = Agent(
                       id: widget.agentId,
-                      name: _nameController.text,
+                      name: _displayNameController.text,
                       description: _descriptionController.text,
                       type: _selectedType ?? 'Analytics',
                       isActive: true,

@@ -37,18 +37,27 @@ class _TalkPageState extends State<TalkPage> {
     super.initState();
     _loadAgentConfig();
     _getVoices();
+
   }
 
   Future<void> _getVoices() async {
+    final agentProvider = Provider.of<AgentProvider>(context, listen: false);
+    print("-++++++-=-=-${agentProvider.voice_code}");
+
     try {
       allVoices = await ttsService.getAllVoices();
       if (allVoices.isNotEmpty) {
-        // setState(() {
-        //   selectedVoice = allVoices[0]['code'];
-        // });
+        print("-=-=-=-=-=-${allVoices}");
+        print("-=-=-=-=-=-${agentProvider.voice_code}");
+        print("selected-=-=-=-=-${selectedVoice}");
+        setState(() {
+           if (agentProvider.voice_code == '') {
+             selectedVoice = allVoices[0]['code'];
+          }
+        });
       } else {
         setState(() {
-          selectedVoice = null;
+          selectedVoice = 'de-DE-FlorianMultilingualNeural';
         });
       }
     } catch (e) {
@@ -66,13 +75,11 @@ class _TalkPageState extends State<TalkPage> {
       imagePath = 'assets/images/male.png';
     }
 
-    String displayName = voice['name'].split('(')[0].trim();
-
     return Row(
       children: [
         Image.asset(imagePath, height: 24, width: 24),
         SizedBox(width: 8),
-        Text(displayName),
+        Text(voice['name']),
       ],
     );
   }
@@ -164,7 +171,9 @@ class _TalkPageState extends State<TalkPage> {
         ? allVoices
         : allVoices.where((voice) => voice['gender'] == selectedGender).toList();
     if (filteredVoices.isNotEmpty && !filteredVoices.any((voice) => voice['code'] == selectedVoice)) {
-      // selectedVoice = filteredVoices[0]['code']; // Set to the first available voice in the filtered list
+      if (agentProvider.voice_code == '') {
+        selectedVoice = filteredVoices[0]['code'];
+      }
     } else if (filteredVoices.isEmpty) {
       selectedVoice = null; // Set to null if no voices match the filter
     }
@@ -248,7 +257,7 @@ class _TalkPageState extends State<TalkPage> {
                   Expanded(
                     child: DropdownButton<String>(
                       isExpanded: true,
-                      value: agentProvider.voice_code,
+                      value: selectedVoice ?? agentProvider.voice_code,
                       hint: Text('Select Voice'),
                       dropdownColor: Colors.white,
                       // Inside your DropdownButton's items map
