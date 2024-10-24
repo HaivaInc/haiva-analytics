@@ -1,12 +1,15 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:haivanalytics/pages/publish_agent.dart';
 import 'package:haivanalytics/theme/colortheme.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../models/agent.dart';
 import '../providers/agent_provider.dart';
@@ -134,7 +137,45 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
                         builder: (BuildContext context) {
                           return CupertinoAlertDialog(
                             title: Text('Confirm Publish'),
-                            content: Text('Are you sure you want to publish this agent to the Agent Hub?'),
+                            content: Column(
+                              children: [
+                                SizedBox(height: 5),
+                                Center(
+                                  child: RichText(
+                                    text: TextSpan(
+                                      children: [
+                                        TextSpan(
+                                          text: 'Publishing will make this agent available in the Haiva Marketplace! ',
+                                          style: TextStyle(fontSize: 14, color: CupertinoColors.systemGrey),
+                                        ),
+                                        TextSpan(
+                                          text: 'Haiva Agent Hub',
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            color: Color(0xFF19437D),
+                                            decoration: TextDecoration.underline,
+                                          ),
+                                          recognizer: TapGestureRecognizer()
+                                            ..onTap = () {
+                                              launch('https://haiva.ai/agent-hub');
+                                            },
+                                        ),
+                                        TextSpan(
+                                          text: ', accessible to all users within the Haiva ecosystem.',
+                                          style: TextStyle(fontSize: 14, color: CupertinoColors.systemGrey),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+                                Text(
+                                  'Proceed to publish this agent?',
+                                  style: TextStyle(fontSize: 14),
+                                ),
+                              ],
+                            ),
+
                             actions: [
                               CupertinoDialogAction(
                                 child: Text('Cancel'),
@@ -143,10 +184,13 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
                                 },
                               ),
                               CupertinoDialogAction(
-                                child: Text('Publish'),
+                                child: Text('Confirm'),
                                 onPressed: () {
-                                  Navigator.pop(context); // Close the dialog
-                                  _publishToHub(agent?.id); // Call the publish method
+                                  Navigator.pop(context);
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(builder: (context) => PublishAgentPage(agent?.id)),
+                                  );
                                 },
                                 isDestructiveAction: false,
                               ),
@@ -155,9 +199,6 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
                         },
                       );
                     },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: ColorTheme.primary,
-                    ),
                     child: Text(
                       'Publish to Agent Hub',
                       style: TextStyle(
