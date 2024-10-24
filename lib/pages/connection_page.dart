@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../services/db_service.dart';
 import '../services/deploy_service.dart';
 import '../theme/colortheme.dart';
+import 'agent_select_page.dart';
 import 'connection_table_page.dart';
 import 'db_config.dart';
 
@@ -309,70 +310,146 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                         ]
                       };
 
-                      showCupertinoDialog(
-                        context: context,
-                        builder: (context) => CupertinoAlertDialog(
-                          title: Text('Deployment'),
-                          content: Column(
-                            children: [
-                              Text('Deployment started...'),
-                              CupertinoActivityIndicator(),
-                            ],
-                          ),
-                        ),
-                      );
+
+
+              //         try {final savedresponse = await _dbService.saveDbConfig(agentId, dbConfig);
+              //
+              // if(savedresponse.statusCode == 200 || savedresponse.statusCode == 201) {
+              //   final response = await deployService.deployHaivaDb(agentId, dbConfig);
+              //   // Close the dialog
+              //   final respBody = json.decode(response.body);
+              //
+              //   if (response.statusCode == 200 || response.statusCode == 201) {
+              //     showCupertinoDialog(context: context, builder: (context) =>
+              //         CupertinoAlertDialog(
+              //           title: Text('Deployment'),
+              //           content: Column(
+              //             children: [
+              //               Text(json.decode(respBody['message'])),
+              //               CupertinoActivityIndicator(),
+              //             ],
+              //           ),
+              //         ),);
+              //     //
+              //     // showCupertinoDialog(context: context, builder: (context) =>
+              //     //       CupertinoAlertDialog(
+              //     //         title: Text('Success'),
+              //     //         content: Text('Deployment successful!'),
+              //     //         actions: [
+              //     //           CupertinoDialogAction(
+              //     //             child: Text('OK'),
+              //     //             onPressed: () {
+              //     //               Navigator.of(context)
+              //     //                   .pop(); // Close success dialog
+              //     //               Navigator.of(context)
+              //     //                   .pop(); // Pop navigation to the previous page
+              //     //             },
+              //     //           ),
+              //     //         ],
+              //     //       ),);
+              //   }
+              //   else {
+              //     print('Deployment failed');
+              //     showCupertinoDialog(
+              //       context: context,
+              //       builder: (context) =>
+              //           CupertinoAlertDialog(
+              //             title: Text('Error'),
+              //             content: Text('Deployment failed. Please try again.'),
+              //             actions: [
+              //               CupertinoDialogAction(
+              //                 child: Text('OK'),
+              //                 onPressed: () => Navigator.of(context).pop(),
+              //               ),
+              //             ],
+              //           ),
+              //     );
+              //   }
+              // }
+              //
+              //         }
+              //         catch (e) {
+              //           Navigator.of(context).pop(); // Close the "deployment started" dialog
+              //           print('Error during deployment: $e');
+              //           showCupertinoDialog(
+              //             context: context,
+              //             builder: (context) => CupertinoAlertDialog(
+              //               title: Text('Error'),
+              //               content: Text('Error during deployment: $e'),
+              //               actions: [
+              //                 CupertinoDialogAction(
+              //                   child: Text('OK'),
+              //                   onPressed: () => Navigator.of(context).pop(),
+              //                 ),
+              //               ],
+              //             ),
+              //           );
+              //         }
 
                       try {
                         final savedresponse = await _dbService.saveDbConfig(agentId, dbConfig);
+                        if (savedresponse.statusCode == 200 || savedresponse.statusCode == 201) {
+                          final response = await deployService.deployHaivaDb(agentId, dbConfig);
 
-              if(savedresponse.statusCode == 200 || savedresponse.statusCode == 201){
-                final response = await deployService.deployHaivaDb(agentId, dbConfig);
-                Navigator.of(context).pop(); // Close the dialog
+                          if (response.statusCode == 200 || response.statusCode == 201) {
+                            // Show deployment in progress dialog
+                            showCupertinoDialog(
+                              context: context,
+                              barrierDismissible: false,
+                              builder: (dialogContext) => CupertinoAlertDialog(
+                                title: Text('Deployment'),
+                                content: Column(
+                                  children: [
+                                    Text('Deployment started!'),  // Use static text instead of parsing JSON
+                                    SizedBox(height: 10),
+                                    CupertinoActivityIndicator(),
+                                  ],
+                                ),
+                              ),
+                            );
 
-                if (response.statusCode == 200 || response.statusCode == 201) {
-                  print('Deployment successful');
-                  showCupertinoDialog(
-                    context: context,
-                    builder: (context) => CupertinoAlertDialog(
-                      title: Text('Success'),
-                      content: Text('Deployment successful!'),
-                      actions: [
-                        CupertinoDialogAction(
-                          child: Text('OK'),
-                          onPressed: () {
-              Navigator.of(context).pop(); // Close success dialog
-              Navigator.of(context).pop(); // Pop navigation to the previous page
-                          },
-                        ),
-                      ],
-                    ),
-                  );
-                } else {
-                  print('Deployment failed');
-                  showCupertinoDialog(
-                    context: context,
-                    builder: (context) => CupertinoAlertDialog(
-                      title: Text('Error'),
-                      content: Text('Deployment failed. Please try again.'),
-                      actions: [
-                        CupertinoDialogAction(
-                          child: Text('OK'),
-                          onPressed: () => Navigator.of(context).pop(),
-                        ),
-                      ],
-                    ),
-                  );
-                }
-              }
+                            // Add a slight delay to show the loading state
+                            await Future.delayed(const Duration(seconds: 2));
 
+                            // Close the deployment dialog
+                            Navigator.of(context).pop();
+
+                            // Navigate to AgentSelectionPage and remove all previous routes
+                            Navigator.of(context).pushAndRemoveUntil(
+                              CupertinoPageRoute(
+                                builder: (context) =>  AgentSelectionPage(),
+                              ),
+                                  (route) => false,
+                            );
+                          } else {
+                            print('Deployment failed');
+                            showCupertinoDialog(
+                              context: context,
+                              builder: (context) => CupertinoAlertDialog(
+                                title: Text('Error'),
+                                content: Text('Deployment failed. Please try again.'),
+                                actions: [
+                                  CupertinoDialogAction(
+                                    child: Text('OK'),
+                                    onPressed: () => Navigator.of(context).pop(),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                        }
                       } catch (e) {
-                        Navigator.of(context).pop(); // Close the "deployment started" dialog
+                        // If there's any dialog showing, close it
+                        if (Navigator.of(context).canPop()) {
+                          Navigator.of(context).pop();
+                        }
+
                         print('Error during deployment: $e');
                         showCupertinoDialog(
                           context: context,
                           builder: (context) => CupertinoAlertDialog(
                             title: Text('Error'),
-                            content: Text('Error during deployment: $e'),
+                            content: Text('Error during deployment. Please try again.'),
                             actions: [
                               CupertinoDialogAction(
                                 child: Text('OK'),

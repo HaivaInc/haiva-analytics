@@ -10,6 +10,8 @@ class Agent {
   final bool? is_published;
   final bool? is_featured;
   final AgentConfigs? agentConfigs;
+  final bool? inProgress;
+  final bool? hasError;
 
 
   Agent({
@@ -22,11 +24,13 @@ class Agent {
     this.is_published,
     this.is_featured,
     required    this.agentConfigs,
+    this.inProgress,
+    this.hasError,
 
   });
 
   factory Agent.fromJson(Map<String, dynamic> json) {
-    print('888888${json['agent_configs']}');
+
     return Agent(
       id: json['agent_id'] ?? '', // Provide default value if null
       name: json['name'] ?? '',
@@ -34,6 +38,8 @@ class Agent {
       type: json['type'] ?? '',
       isActive: json['is_active'] ,
       isDeployed: json['is_deployed'],
+        inProgress: false,
+        hasError: false,
         is_published: json['is_published'],
         is_featured: json['is_featured'],
       agentConfigs: json['agent_configs'] != null
@@ -55,6 +61,8 @@ class Agent {
     bool? is_published,
     bool? is_featured,
     AgentConfigs? agentConfigs,
+    bool? inProgress,
+    bool? hasError,
   }) {
     return Agent(
       id: id ?? this.id,
@@ -66,6 +74,8 @@ class Agent {
       is_published: is_published ?? this.is_published,
       is_featured: is_featured ?? this.is_featured,
       agentConfigs: agentConfigs ?? this.agentConfigs,
+      inProgress: inProgress ?? this.inProgress,
+      hasError: hasError ?? this.hasError,
     );
   }
 }

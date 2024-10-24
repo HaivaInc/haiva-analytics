@@ -25,6 +25,7 @@ class AgentService {
       final Map<String, dynamic> data = json.decode(response.body);
 
       Constants.orgId = data['org_id'];
+      print("agents by id  = $data");
       print("orgid = ${Constants.orgId}");
       return Agent.fromJson(data);
     } else {
@@ -33,9 +34,7 @@ class AgentService {
       throw Exception('Failed to load agent with ID: $agentId');
     }
   }
-
   Future<List<Agent>> getAgents() async {
-
     final response = await http.get(
       Uri.parse('$baseUrl2/getAllHaivaAgentsByWs?agentType=Analytics&workspace-id=$workspaceId'),
       headers: {
@@ -46,16 +45,63 @@ class AgentService {
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final Map<String, dynamic> data = json.decode(response.body);
-
       final List<dynamic> agentsJson = data['agent'];
+
       Constants.orgId = agentsJson[0]['org_id'];
-      print("org id :${agentsJson[0]['org_id']}");
-      return agentsJson.map((json) => Agent.fromJson(json)).toList();
+      print("Org ID: ${Constants.orgId}");
+
+      List<Agent> agents = agentsJson.map((json) {
+        bool isDeployed = json['is_deployed'] ?? false;
+        bool inProgress = false;
+        bool hasError = false;
+        // Check if the deployment_profile and profile_info exist
+        if (json.containsKey('deployment_profile') && json['deployment_profile'] != null) {
+          var deploymentProfile = json['deployment_profile'];
+
+          if (deploymentProfile.containsKey('profile_info') && deploymentProfile['profile_info'] != null) {
+            inProgress = deploymentProfile['profile_info']['in_progress'] ?? false;
+            hasError =  deploymentProfile['profile_info']['has_error'] ?? false;
+          }
+        }
+
+        print("in progress = $inProgress");
+
+        // Pass `inProgress` into the Agent model
+        return Agent.fromJson(json).copyWith(inProgress: inProgress , hasError: hasError);
+      }).toList();
+
+
+      return agents;
     } else {
       print('Error status code: ${response.statusCode}');
       print('Error response body: ${response.body}');
       throw Exception('Failed to load agents');
-    }}
+    }
+  }
+
+
+
+  // Future<List<Agent>> getAgents() async {
+  //
+  //   final response = await http.get(
+  //     Uri.parse('$baseUrl2/getAllHaivaAgentsByWs?agentType=Analytics&workspace-id=$workspaceId'),
+  //     headers: {
+  //       'Authorization': '$token',
+  //       'Content-Type': 'application/json',
+  //     },
+  //   );
+  //   if (response.statusCode == 200 || response.statusCode == 201) {
+  //     final Map<String, dynamic> data = json.decode(response.body);
+  //     final List<dynamic> agentsJson = data['agent'];
+  //
+  //     Constants.orgId = agentsJson[0]['org_id'];
+  //     print("org id :${agentsJson[0]['org_id']}");
+  //     return agentsJson.map((json) => Agent.fromJson(json)).toList();
+  //   } else {
+  //     print('Error status code: ${response.statusCode}');
+  //     print('Error response body: ${response.body}');
+  //     throw Exception('Failed to load agents');
+  //   }}
 
 
   Future<String> uploadImage(File image) async {
@@ -120,7 +166,7 @@ class AgentService {
   }
 
   Future<void> updateAgent(Agent agent) async {
-    print('7777777${agent.agentConfigs?.voice_code}');
+
     final url = Uri.parse('$baseUrl/saveHaivaAgentConfig?agent-id=${agent.id}');
 print("agentid = ${agent.id}");
     final response = await http.post(

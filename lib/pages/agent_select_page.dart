@@ -42,10 +42,12 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   String? _selectedAgentId;
   bool _loadingMore = false;
   final ScrollController _scrollController = ScrollController();
+  bool inProgressCheck = false;
 
   Timer? _timer;
   @override
   void initState() {
+
     super.initState();
     _refreshAgents();
     _timer = Timer.periodic(Duration(seconds: 10), (timer) async {
@@ -68,6 +70,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       if (mounted) {
         print("-----${Constants.workspaceId}");
         await Provider.of<AgentProvider>(context, listen: false).fetchAgents(Constants.workspaceId!);
+
       }
     } catch (e) {
       print('Error fetching agents: $e');
@@ -679,6 +682,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   //   );
   // }
   Widget _buildAgentTile(Agent agent) {
+    inProgressCheck = agent.inProgress!;
     bool isDefault = Constants.agentId == agent.id;
 
     return GestureDetector(
@@ -692,11 +696,8 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
       },
       child: GestureDetector(
         onTap: () {
-          Navigator.push(
-            context,
-            CupertinoPageRoute(
-              builder: (context) => MainNavigationPage(agentId: agent.id!),
-            ),
+          if(!inProgressCheck )
+          Navigator.push(context, CupertinoPageRoute(builder: (context) => MainNavigationPage(agentId: agent.id!),),
           );
         },
         child: Container(
@@ -708,56 +709,166 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
                 ? Border.all(color: Color(0xFF19437D), width: 2)
                 : null,
           ),
-          child: Padding(
-            padding: const EdgeInsets.all(12),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildAgentAvatar(agent),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        agent.name ?? 'Unnamed Agent',
-                        style: TextStyle(
-                            fontFamily: GoogleFonts.raleway().fontFamily,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 16
-                        ),
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        agent.description ?? 'No description',
-                        style: TextStyle(
-                            fontFamily: GoogleFonts.raleway().fontFamily,
-                            fontSize: 14,
-                            color: CupertinoColors.systemGrey
-                        ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(width: 12),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.end,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildDeploymentStatus(agent),
-                    SizedBox(height: 8),
-                    _buildMoreOptionsButton(agent, isDefault),
+                    _buildAgentAvatar(agent),
+                    SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            agent.name ?? 'Unnamed Agent',
+                            style: TextStyle(
+                                fontFamily: GoogleFonts.raleway().fontFamily,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 16
+                            ),
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            agent.description ?? 'No description',
+                            style: TextStyle(
+                                fontFamily: GoogleFonts.raleway().fontFamily,
+                                fontSize: 14,
+                                color: CupertinoColors.systemGrey
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                   //     _buildDeploymentStatus(agent),
+                        SizedBox(height: 8),
+                        _buildMoreOptionsButton(agent, isDefault),
+                      ],
+                    ),
                   ],
+                ),
+              ),
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: _getContainerColor(agent),
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(12),
+                bottomRight: Radius.circular(12),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _getIcon(agent),
+                  color: _getIconColor(agent),
+                  size: 20,
+                ),
+                const SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    _getMessage(agent),
+                    style: TextStyle(
+                      color: _getTextColor(agent),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
             ),
+          )
+
+
+
+    // if(inProgressCheck&& agent.isDeployed!)
+              //   Container(
+              //   child: Padding(
+              //     padding: const EdgeInsets.all(4),
+              //     child: Row(
+              //       children: [
+              //         Icon(color: Colors.red,Icons.info,size: 20,),
+              //         SizedBox(width: 4,),
+              //         Text('Agent not deployed yet wait till it gets deployed',style: TextStyle(color: Colors.red , fontWeight: FontWeight.bold),)
+              //       ]),
+              //   ),
+              //   decoration: BoxDecoration(
+              //     color: Colors.yellow,
+              //     borderRadius: BorderRadius.only(bottomLeft: Radius.circular(12),bottomRight: Radius.circular(12)),
+              //
+              //   ),
+              //
+              //
+              // )
+            ],
           ),
 
         ),
       ),
     );
+  }
+  String _getMessage(agent) {
+    if (inProgressCheck && !(agent.isDeployed ?? false)) {
+      return 'Agent not deployed yet. Please wait until it gets deployed.';
+    } else if (agent.isDeployed ?? false) {
+      return 'Agent successfully deployed!';
+    } else if (agent.hasError ?? false) {
+      return 'Deployment encountered an error.';
+    } else {
+      return 'Deployment encountered an error.';
+    }
+  }
+  IconData _getIcon(agent) {
+    if (inProgressCheck && !(agent.isDeployed ?? false)) {
+      return Icons.info;
+    } else if (agent.isDeployed ?? false) {
+      return Icons.check_circle;
+    } else if (agent.hasError ?? false) {
+      return Icons.error;
+    } else {
+      return Icons.help_outline;
+    }
+  }
+  Color _getIconColor(agent) {
+    if (inProgressCheck && !(agent.isDeployed ?? false)) {
+      return Colors.red;
+    } else if (agent.isDeployed ?? false) {
+      return Colors.green;
+    } else if (agent.hasError ?? false) {
+      return Colors.red;
+    } else {
+      return Colors.orange;
+    }
+  }
+  Color _getTextColor(agent) {
+    if (inProgressCheck && !(agent.isDeployed ?? false)) {
+      return Colors.red;
+    } else if (agent.isDeployed ?? false) {
+      return Colors.green;
+    } else if (agent.hasError ?? false) {
+      return Colors.red;
+    } else {
+      return Colors.orange;
+    }
+  }
+  Color _getContainerColor(agent) {
+    if (inProgressCheck && !(agent.isDeployed ?? false)) {
+      return Colors.yellow;
+    } else if (agent.isDeployed ?? false) {
+      return Colors.green[100]!;
+    } else if (agent.hasError ?? false) {
+      return Colors.red[100]!;
+    } else {
+      return Colors.grey[300]!;
+    }
   }
   Widget _buildMoreOptionsButton(Agent agent, bool isDefault) {
     return CupertinoButton(
@@ -1091,27 +1202,27 @@ Widget _buildAgentAvatar(Agent agent) {
     ),
   );
 }
-
-Widget _buildDeploymentStatus(Agent agent) {
-  return Padding(
-    padding:  EdgeInsets.all(10.0),
-    child: Column(
-
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        SizedBox(height: 4),
-        Text(
-          agent.isDeployed ?? false ? 'DEPLOYED' : 'NOT DEPLOYED',
-          style: TextStyle(
-            fontFamily: GoogleFonts.raleway().fontFamily,
-            color: agent.isDeployed ?? false
-                ? CupertinoColors.activeGreen
-                : CupertinoColors.systemRed,
-            fontWeight: FontWeight.bold,
-            fontSize: 12,
-          ),
-        ),
-      ],
-    ),
-  );
-}
+//
+// Widget _buildDeploymentStatus(Agent agent) {
+//   return Padding(
+//     padding:  EdgeInsets.all(10.0),
+//     child: Column(
+//
+//       mainAxisAlignment: MainAxisAlignment.end,
+//       children: [
+//         SizedBox(height: 4),
+//         Text(
+//           agent.isDeployed ?? false ? 'DEPLOYED' : 'NOT DEPLOYED',
+//           style: TextStyle(
+//             fontFamily: GoogleFonts.raleway().fontFamily,
+//             color: agent.isDeployed ?? false
+//                 ? CupertinoColors.activeGreen
+//                 : CupertinoColors.systemRed,
+//             fontWeight: FontWeight.bold,
+//             fontSize: 12,
+//           ),
+//         ),
+//       ],
+//     ),
+//   );
+// }
