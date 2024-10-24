@@ -861,7 +861,7 @@ class _AgentSelectionPageState extends State<AgentSelectionPage> {
   }
   Color _getContainerColor(agent) {
     if (inProgressCheck && !(agent.isDeployed ?? false)) {
-      return Colors.yellow;
+      return Colors.yellow[100]!;
     } else if (agent.isDeployed ?? false) {
       return Colors.green[100]!;
     } else if (agent.hasError ?? false) {
