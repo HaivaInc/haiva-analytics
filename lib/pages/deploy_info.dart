@@ -199,6 +199,9 @@ class _DeployInfoPageState extends State<DeployInfoPage> with AutomaticKeepAlive
                         },
                       );
                     },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: ColorTheme.primary, // Replace with your desired color
+                    ),
                     child: Text(
                       'Publish to Agent Hub',
                       style: TextStyle(

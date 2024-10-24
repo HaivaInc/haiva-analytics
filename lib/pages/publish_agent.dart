@@ -252,25 +252,6 @@ class _PublishAgentState extends State<PublishAgent> {
       print('Error loading agent data: $e');
     }
   }
-  // void _addListeners() {
-  //   _nameController.addListener(_onTextFieldChanged);
-  //   _descriptionController.addListener(_onTextFieldChanged);
-  //   _displayNameController.addListener(_onTextFieldChanged);
-  //
-  //   _taglineController.addListener(_onTextFieldChanged);
-  //   _detailedDescController.addListener(_onTextFieldChanged);
-  //   _keyFeaturesController.addListener(_onTextFieldChanged);
-  //   _helpDocUrlController.addListener(_onTextFieldChanged);
-  //   _caseStudiesController.addListener(_onTextFieldChanged);
-  //   _helpvideoController.addListener(_onTextFieldChanged);
-  //   _publisherController.addListener(_onTextFieldChanged);
-  //   _emailController.addListener(_onTextFieldChanged);
-  //   _addressController.addListener(_onTextFieldChanged);
-  //
-  //   for (var controller in _questionController) {
-  //     controller.addListener(_onTextFieldChanged);
-  //   }
-  // }
 
   @override
   void dispose() {
@@ -365,10 +346,10 @@ class _PublishAgentState extends State<PublishAgent> {
     final allowedFormats = ['jpg', 'jpeg', 'png'];
 
     if (fileSize > maxFileSize) {
-      return 'File size exceeds 2MB.';
+      return 'Image size exceeds 2MB.';
     }
     if (!allowedFormats.contains(fileExtension)) {
-      return 'Invalid file format. Only JPG, JPEG, and PNG are allowed.';
+      return 'Invalid image format. Only JPG, JPEG, and PNG are allowed.';
     }
     if (decodedImage.width < minWidth || decodedImage.height < minHeight) {
       return 'Image resolution is too low. Minimum 480x854 pixels required.';
@@ -708,12 +689,7 @@ class _PublishAgentState extends State<PublishAgent> {
             if (_currentIndex == 0)
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => AgentSelectionPage(),
-                    ),
-                  );
+                  Navigator.pop(context);
                 },
                 child: Text(
                   'Back',
@@ -1096,12 +1072,12 @@ class _PublishAgentState extends State<PublishAgent> {
         List<String> filePaths = ['${Constants.orgId}/${Constants.workspaceId}/$fileName'];
         await _publishService.deleteFiles(filePaths);
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('File deleted successfully')),
+          const SnackBar(content: Text('Image deleted successfully')),
         );
         return true;
       } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to delete file: $e')),
+          SnackBar(content: Text('Failed to delete image: $e')),
         );
         return false;
       }
